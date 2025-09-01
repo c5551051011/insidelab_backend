@@ -1,4 +1,5 @@
 # apps/authentication/views.py
+"""
 from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -39,3 +40,4 @@ def verify_email(request):
             {'error': 'Invalid verification token'},
             status=status.HTTP_400_BAD_REQUEST
         )
+"""

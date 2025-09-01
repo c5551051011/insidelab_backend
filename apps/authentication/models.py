@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from .validators import validate_edu_email
 
+
+"""
 class User(AbstractUser):
     email = models.EmailField(unique=True, validators=[validate_edu_email])
     university = models.ForeignKey(
@@ -33,5 +35,7 @@ class User(AbstractUser):
 
     class Meta:
         db_table = 'users'
+
+"""
 
 

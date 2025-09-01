@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .validators import validate_edu_email
 
+"""
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -38,3 +39,4 @@ class RegisterSerializer(serializers.ModelSerializer):
         # TODO: Send verification email
         return user
 
+"""
