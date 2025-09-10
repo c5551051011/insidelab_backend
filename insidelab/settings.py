@@ -18,7 +18,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_yasg',
+    'django_filters',
 
+    'apps.authentication',
     'apps.labs',
     'apps.reviews',
     'apps.universities',
@@ -98,3 +100,6 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'authentication.User'

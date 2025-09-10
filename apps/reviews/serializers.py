@@ -17,11 +17,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     def validate_category_ratings(self, value):
         required_categories = [
+            'Mentorship Quality',
             'Research Environment',
-            'Advisor Support',
-            'Work-Life Balance', 
-            'Career Development',
-            'Funding Availability'
+            'Work-Life Balance',
+            'Career Support',
+            'Funding & Resources',
+            'Collaboration Culture'
         ]
         
         for category in required_categories:

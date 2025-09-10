@@ -8,19 +8,19 @@ User = get_user_model()
 
 class Review(models.Model):
     POSITION_CHOICES = [
-        ('undergrad', 'Undergraduate'),
-        ('ms', 'MS Student'),
-        ('phd', 'PhD Student'),
-        ('postdoc', 'Postdoc'),
-        ('research_staff', 'Research Staff'),
-        ('visiting', 'Visiting Researcher'),
+        ('PhD Student', 'PhD Student'),
+        ('MS Student', 'MS Student'),
+        ('Undergrad', 'Undergraduate Student'),
+        ('PostDoc', 'PostDoc'),
+        ('Research Assistant', 'Research Assistant'),
     ]
     
     DURATION_CHOICES = [
-        ('< 1 year', 'Less than 1 year'),
-        ('1-2 years', '1-2 years'),
-        ('2-3 years', '2-3 years'),
-        ('3-4 years', '3-4 years'),
+        ('< 6 months', 'Less than 6 months'),
+        ('6 months', '6 months'),
+        ('1 year', '1 year'),
+        ('2 years', '2 years'),
+        ('3 years', '3 years'),
         ('4+ years', '4+ years'),
     ]
     

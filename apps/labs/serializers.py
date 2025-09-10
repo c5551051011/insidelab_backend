@@ -56,11 +56,12 @@ class LabDetailSerializer(serializers.ModelSerializer):
             return None
         
         categories = [
+            'Mentorship Quality',
             'Research Environment',
-            'Advisor Support', 
             'Work-Life Balance',
-            'Career Development',
-            'Funding Availability'
+            'Career Support',
+            'Funding & Resources',
+            'Collaboration Culture'
         ]
         
         breakdown = {}
