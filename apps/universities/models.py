@@ -23,7 +23,7 @@ class University(models.Model):
 
 class Professor(models.Model):
     name = models.CharField(max_length=200)
-    email = models.EmailField()
+    email = models.EmailField(blank=True, null=True)
     university = models.ForeignKey(
         University, 
         on_delete=models.CASCADE, 

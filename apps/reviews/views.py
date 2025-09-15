@@ -1,9 +1,9 @@
 
 # apps/reviews/views.py
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django.db.models import F
 from .models import Review, ReviewHelpful
 from .serializers import ReviewSerializer, ReviewHelpfulSerializer
@@ -63,4 +63,24 @@ class ReviewViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(reviews, many=True)
         return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_review_categories(request):
+    """Get available review categories for rating labs"""
+    categories = [
+        'Research Environment',
+        'Advisor Support',
+        'Work-Life Balance',
+        'Career Support',
+        'Funding & Resources',
+        'Lab Culture',
+        'Mentorship Quality',
+    ]
+
+    return Response({
+        'categories': categories,
+        'count': len(categories)
+    })
 

@@ -4,8 +4,8 @@ from rest_framework.routers import DefaultRouter
 from .views import UniversityViewSet, ProfessorViewSet
 
 router = DefaultRouter()
-router.register(r'', UniversityViewSet)
-router.register(r'professors', ProfessorViewSet)
+router.register(r'professors', ProfessorViewSet, basename='professor')
+router.register(r'', UniversityViewSet, basename='university')
 
 urlpatterns = router.urls
 
