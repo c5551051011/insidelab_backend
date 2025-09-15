@@ -1,10 +1,9 @@
 # apps/authentication/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from .validators import validate_edu_email
 
 class User(AbstractUser):
-    email = models.EmailField(unique=True, validators=[validate_edu_email])
+    email = models.EmailField(unique=True)
     name = models.CharField(max_length=200, blank=True)
     university = models.ForeignKey(
         'universities.University', 
