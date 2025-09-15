@@ -2,17 +2,21 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .validators import validate_edu_email
+import secrets
 
-"""
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(source='joined_date', read_only=True)
+
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'university', 'position', 
-                 'department', 'is_verified', 'date_joined')
-        read_only_fields = ('is_verified', 'date_joined')
+        fields = ('id', 'email', 'username', 'name', 'university', 'position',
+                 'department', 'lab_name', 'is_verified', 'verification_status',
+                 'is_lab_member', 'can_provide_services', 'review_count', 'helpful_votes',
+                 'joined_date', 'created_at')
+        read_only_fields = ('is_verified', 'verification_status', 'joined_date', 'created_at',
+                           'review_count', 'helpful_votes')
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -22,11 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'password', 'password_confirm',
-                 'university', 'position', 'department')
-    
-    def validate_email(self, value):
-        validate_edu_email(value)
-        return value
+                 'name', 'position', 'department')
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -35,8 +35,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        
+        # Generate verification token
+        validated_data['verification_token'] = secrets.token_urlsafe(32)
+        validated_data['verification_status'] = 'pending'
+        
         user = User.objects.create_user(**validated_data)
         # TODO: Send verification email
         return user
-
-"""

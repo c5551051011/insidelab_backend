@@ -3,12 +3,14 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import University, Professor
 from .serializers import UniversitySerializer, ProfessorSerializer
 
-class UniversityViewSet(viewsets.ReadOnlyModelViewSet):
+class UniversityViewSet(viewsets.ModelViewSet):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'country', 'state', 'city']
     ordering_fields = ['name', 'ranking']
@@ -34,8 +36,9 @@ class UniversityViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class ProfessorViewSet(viewsets.ReadOnlyModelViewSet):
+class ProfessorViewSet(viewsets.ModelViewSet):
     queryset = Professor.objects.select_related('university')
     serializer_class = ProfessorSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'research_interests']
