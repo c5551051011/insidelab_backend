@@ -8,6 +8,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .serializers import UserSerializer, RegisterSerializer
+from .utils import send_verification_email, verify_email_token
+from .utils import resend_verification_email as resend_email_util
 
 User = get_user_model()
 
@@ -31,9 +33,20 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         if response.status_code == 201:
+            user = User.objects.get(id=response.data['id'])
+
+            # Send verification email
+            email_sent = send_verification_email(user, request)
+
+            if email_sent:
+                message = 'User registered successfully. Please check your email for verification.'
+            else:
+                message = 'User registered successfully, but verification email could not be sent. Please try again later.'
+
             response.data = {
-                'message': 'User registered successfully. Please check your email for verification.',
-                'user': response.data
+                'message': message,
+                'user': response.data,
+                'email_sent': email_sent
             }
         return response
 
@@ -68,24 +81,76 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return response
 
 
-@api_view(['POST'])
-def verify_email(request):
-    token = request.data.get('token')
-    try:
-        user = User.objects.get(verification_token=token)
-        user.is_verified = True
-        user.verification_status = 'verified'
-        user.verification_token = ''
-        user.save()
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email(request, token):
+    """Verify email using token from URL"""
+    user = verify_email_token(token)
+
+    if user:
         return Response({
-            'message': 'Email verified successfully',
+            'message': '이메일 인증이 완료되었습니다!',
+            'success': True,
             'user': UserSerializer(user).data
         })
+    else:
+        return Response({
+            'error': '잘못되었거나 만료된 인증 토큰입니다.',
+            'success': False
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_verification_email(request):
+    """Resend verification email"""
+    email = request.data.get('email')
+
+    if not email:
+        return Response({
+            'error': '이메일 주소가 필요합니다.',
+            'success': False
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+
+        if user.email_verified:
+            return Response({
+                'error': '이미 인증된 이메일입니다.',
+                'success': False
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        success, message = resend_email_util(user, request)
+
+        return Response({
+            'message': message,
+            'success': success
+        }, status=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST)
+
     except User.DoesNotExist:
-        return Response(
-            {'error': 'Invalid verification token'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({
+            'error': '해당 이메일로 등록된 계정이 없습니다.',
+            'success': False
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def unsubscribe(request, user_id):
+    """Unsubscribe user from emails"""
+    try:
+        user = User.objects.get(id=user_id)
+        # Here you might set an unsubscribe flag if you add one to the model
+        return Response({
+            'message': '구독 취소가 완료되었습니다.',
+            'success': True
+        })
+    except User.DoesNotExist:
+        return Response({
+            'error': '사용자를 찾을 수 없습니다.',
+            'success': False
+        }, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

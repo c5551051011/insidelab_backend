@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InsideLab 이메일 인증</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .logo {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .tagline {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .message {
+            color: #4b5563;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        .verify-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        .verify-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+        .button-container {
+            text-align: center;
+            margin: 32px 0;
+        }
+        .alternative-link {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+            border-left: 4px solid #4f46e5;
+        }
+        .alternative-link h4 {
+            color: #1f2937;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .alternative-link code {
+            background-color: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .benefits {
+            background-color: #f0f9ff;
+            padding: 24px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+        .benefits h3 {
+            color: #0369a1;
+            margin: 0 0 16px 0;
+            font-size: 18px;
+        }
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+        .benefit-item::before {
+            content: "✓";
+            background-color: #10b981;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .warning p {
+            color: #92400e;
+            margin: 0;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                box-shadow: none;
+            }
+            .header, .content, .footer {
+                padding: 24px 20px;
+            }
+            .logo {
+                font-size: 28px;
+            }
+            .verify-button {
+                display: block;
+                margin: 20px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🔬 InsideLab</div>
+            <div class="tagline">Real insights into graduate research labs</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">안녕하세요, {{ user_name }}님!</div>
+
+            <div class="message">
+                InsideLab에 가입해 주셔서 감사합니다! 🎉<br>
+                계정 보안을 위해 이메일 주소 인증이 필요합니다.
+                아래 버튼을 클릭하여 인증을 완료해 주세요.
+            </div>
+
+            <div class="button-container">
+                <a href="{{ verification_url }}" class="verify-button">
+                    이메일 인증하기
+                </a>
+            </div>
+
+            <div class="alternative-link">
+                <h4>버튼이 작동하지 않나요?</h4>
+                아래 링크를 복사하여 브라우저에 직접 붙여넣어 주세요:<br>
+                <code>{{ verification_url }}</code>
+            </div>
+
+            <div class="benefits">
+                <h3>🚀 인증 후 이용 가능한 기능</h3>
+                <div class="benefit-item">연구실 리뷰 작성 및 열람</div>
+                <div class="benefit-item">교수님별 상세 평점 확인</div>
+                <div class="benefit-item">개인 맞춤 연구실 추천</div>
+                <div class="benefit-item">리뷰 작성시 인센티브 혜택</div>
+                <div class="benefit-item">익명 리뷰 작성 기능</div>
+            </div>
+
+            <div class="warning">
+                <p>
+                    <strong>🔒 보안 안내:</strong>
+                    이 링크는 24시간 후 만료됩니다.
+                    본인이 가입하지 않았다면 이 이메일을 무시해 주세요.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>InsideLab 팀</strong></p>
+            <p>대학원생들의 더 나은 연구실 선택을 위해</p>
+
+            <div class="social-links">
+                <a href="mailto:support@insidelab.com">고객지원</a> |
+                <a href="https://insidelab.com/privacy">개인정보처리방침</a> |
+                <a href="https://insidelab.com/terms">이용약관</a>
+            </div>
+
+            <p style="font-size: 12px; color: #9ca3af;">
+                이 이메일은 InsideLab 계정 인증을 위해 발송되었습니다.<br>
+                더 이상 이메일을 받고 싶지 않으시면
+                <a href="{{ unsubscribe_url }}" style="color: #4f46e5;">구독취소</a>를 클릭해 주세요.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

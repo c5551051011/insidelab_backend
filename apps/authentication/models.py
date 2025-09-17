@@ -40,6 +40,11 @@ class User(AbstractUser):
         default='unverified'
     )
     verification_token = models.CharField(max_length=100, blank=True)
+
+    # Email verification
+    email_verified = models.BooleanField(default=False)
+    email_verification_token = models.CharField(max_length=100, blank=True)
+    email_verification_sent_at = models.DateTimeField(null=True, blank=True)
     
     # Service provider capabilities
     is_lab_member = models.BooleanField(default=False)
