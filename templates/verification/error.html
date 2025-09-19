@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 실패 - InsideLab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ef4444, #dc2626, #b91c1c);
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: shake 0.6s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .error-mark {
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .error-info {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .error-message {
+            font-size: 16px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 8px;
+        }
+
+        .error-description {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .solutions {
+            margin-bottom: 40px;
+        }
+
+        .solutions-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .solution-list {
+            display: grid;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .solution-item {
+            display: flex;
+            align-items: flex-start;
+            font-size: 16px;
+            color: #4b5563;
+        }
+
+        .solution-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .solution-icon::before {
+            content: "💡";
+            font-size: 12px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #9333ea);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+        }
+
+        .btn-secondary:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4f46e5, #9333ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 40px 24px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">
+            <div class="error-mark">✗</div>
+        </div>
+
+        <h1 class="title">인증 실패 😞</h1>
+        <p class="subtitle">
+            이메일 인증 링크가 유효하지 않거나 만료되었습니다.
+        </p>
+
+        <div class="error-info">
+            <div class="error-message">{{ error_message }}</div>
+            <div class="error-description">인증 토큰이 올바르지 않거나 24시간이 지나 만료되었을 수 있습니다.</div>
+        </div>
+
+        <div class="solutions">
+            <h3 class="solutions-title">💡 해결 방법</h3>
+            <div class="solution-list">
+                <div class="solution-item">
+                    <div class="solution-icon"></div>
+                    새로운 인증 이메일을 요청해 주세요
+                </div>
+                <div class="solution-item">
+                    <div class="solution-icon"></div>
+                    이메일 주소가 정확한지 확인해 주세요
+                </div>
+                <div class="solution-item">
+                    <div class="solution-icon"></div>
+                    스팸 폴더를 확인해 주세요
+                </div>
+                <div class="solution-item">
+                    <div class="solution-icon"></div>
+                    문제가 지속되면 고객지원에 문의해 주세요
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="http://localhost:3000/auth/resend-verification" class="btn btn-primary">새 인증 이메일 요청</a>
+            <a href="http://localhost:3000/" class="btn btn-secondary">홈으로 돌아가기</a>
+        </div>
+
+        <div class="footer">
+            <div class="logo-text">🔬 InsideLab</div>
+            <p>대학원생들의 더 나은 연구실 선택을 위해</p>
+        </div>
+    </div>
+</body>
+</html>

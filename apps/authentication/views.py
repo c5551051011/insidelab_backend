@@ -85,19 +85,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @permission_classes([AllowAny])
 def verify_email(request, token):
     """Verify email using token from URL"""
+    from django.shortcuts import render
+
     user = verify_email_token(token)
 
     if user:
-        return Response({
+        return render(request, 'verification/success.html', {
+            'user': user,
             'message': '이메일 인증이 완료되었습니다!',
-            'success': True,
-            'user': UserSerializer(user).data
+            'success': True
         })
     else:
-        return Response({
-            'error': '잘못되었거나 만료된 인증 토큰입니다.',
+        return render(request, 'verification/error.html', {
+            'error_message': '잘못되었거나 만료된 인증 토큰입니다.',
             'success': False
-        }, status=status.HTTP_400_BAD_REQUEST)
+        })
 
 
 @api_view(['POST'])
