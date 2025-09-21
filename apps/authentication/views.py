@@ -32,26 +32,13 @@ class RegisterView(generics.CreateAPIView):
     
     def create(self, request, *args, **kwargs):
         try:
+            # Skip email sending entirely for now - just register the user
             response = super().create(request, *args, **kwargs)
             if response.status_code == 201:
-                user = User.objects.get(id=response.data['id'])
-
-                # Temporarily disable email sending to debug the issue
-                try:
-                    email_sent = send_verification_email(user, request)
-                except Exception as e:
-                    print(f"Email sending failed: {str(e)}")
-                    email_sent = False
-
-                if email_sent:
-                    message = 'User registered successfully. Please check your email for verification.'
-                else:
-                    message = 'User registered successfully, but verification email could not be sent. Please try again later.'
-
                 response.data = {
-                    'message': message,
+                    'message': 'User registered successfully (email verification temporarily disabled for debugging).',
                     'user': response.data,
-                    'email_sent': email_sent
+                    'email_sent': False
                 }
             return response
         except Exception as e:
@@ -187,6 +174,21 @@ def update_profile(request):
         return Response(serializer.data)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def test_registration(request):
+    """Simple test endpoint to debug registration issues"""
+    try:
+        return Response({
+            'message': 'Test endpoint working',
+            'received_data': request.data
+        })
+    except Exception as e:
+        return Response({
+            'error': f'Test failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
