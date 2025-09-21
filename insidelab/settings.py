@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-key')
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'insidelab.railway.app', '*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'insidelab.up.railway.app', '*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -136,6 +136,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:56768",
     "http://localhost:49152",  # Another common port
     "http://127.0.0.1:49152",
+    "http://localhost:8000",  # Local Django dev
+    "http://127.0.0.1:8000",
+    "http://localhost:4000",  # Additional Flutter ports
+    "http://127.0.0.1:4000",
+    "http://localhost:37785",  # Random Flutter port
+    "http://127.0.0.1:37785",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -151,6 +157,19 @@ CORS_ALLOWED_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+# Add CORS allowed methods
+CORS_ALLOWED_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Add preflight cache time
+CORS_PREFLIGHT_MAX_AGE = 86400
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
