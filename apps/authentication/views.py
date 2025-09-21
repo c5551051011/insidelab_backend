@@ -31,24 +31,36 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        if response.status_code == 201:
-            user = User.objects.get(id=response.data['id'])
+        try:
+            response = super().create(request, *args, **kwargs)
+            if response.status_code == 201:
+                user = User.objects.get(id=response.data['id'])
 
-            # Send verification email
-            email_sent = send_verification_email(user, request)
+                # Temporarily disable email sending to debug the issue
+                try:
+                    email_sent = send_verification_email(user, request)
+                except Exception as e:
+                    print(f"Email sending failed: {str(e)}")
+                    email_sent = False
 
-            if email_sent:
-                message = 'User registered successfully. Please check your email for verification.'
-            else:
-                message = 'User registered successfully, but verification email could not be sent. Please try again later.'
+                if email_sent:
+                    message = 'User registered successfully. Please check your email for verification.'
+                else:
+                    message = 'User registered successfully, but verification email could not be sent. Please try again later.'
 
-            response.data = {
-                'message': message,
-                'user': response.data,
-                'email_sent': email_sent
-            }
-        return response
+                response.data = {
+                    'message': message,
+                    'user': response.data,
+                    'email_sent': email_sent
+                }
+            return response
+        except Exception as e:
+            print(f"Registration error: {str(e)}")
+            from rest_framework.response import Response
+            from rest_framework import status
+            return Response({
+                'error': f'Registration failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
