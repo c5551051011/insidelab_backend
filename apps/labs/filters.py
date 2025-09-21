@@ -19,13 +19,13 @@ class LabFilter(django_filters.FilterSet):
     recruiting_intern = django_filters.BooleanFilter(
         field_name='recruitment_status__is_recruiting_intern'
     )
-    
+
     class Meta:
         model = Lab
         fields = ['department', 'min_rating', 'max_rating']
-    
+
     def filter_research_area(self, queryset, name, value):
         return queryset.filter(research_areas__icontains=value)
-    
+
     def filter_tag(self, queryset, name, value):
         return queryset.filter(tags__icontains=value)
