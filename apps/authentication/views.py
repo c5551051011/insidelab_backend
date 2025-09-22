@@ -61,7 +61,7 @@ class RegisterView(generics.CreateAPIView):
             from rest_framework.response import Response
             from rest_framework import status
 
-            # Return appropriate error message
+            # Return appropriate error message based on failure type
             if "verification email" in str(e).lower():
                 return Response({
                     'error': 'Registration failed: Unable to send verification email. Please try again later.'
