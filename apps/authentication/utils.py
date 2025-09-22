@@ -75,7 +75,7 @@ def send_verification_email(user, request=None):
         # Attach HTML version
         email.attach_alternative(html_content, "text/html")
 
-        # Send email
+        # Send email to user
         email.send()
 
         logger.info(f"Verification email sent successfully to {user.email}")
