@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from .serializers import UserSerializer, RegisterSerializer
 from .utils import send_verification_email, verify_email_token
 from .utils import resend_verification_email as resend_email_util
@@ -32,27 +33,43 @@ class RegisterView(generics.CreateAPIView):
     
     def create(self, request, *args, **kwargs):
         try:
-            response = super().create(request, *args, **kwargs)
-            if response.status_code == 201:
-                user_id = response.data.get('id')
-                user = User.objects.get(id=user_id)
+            with transaction.atomic():
+                # Create user within transaction
+                response = super().create(request, *args, **kwargs)
 
-                # Send verification email
-                email_sent = send_verification_email(user, request)
+                if response.status_code == 201:
+                    user_id = response.data.get('id')
+                    user = User.objects.get(id=user_id)
 
-                response.data = {
-                    'message': 'User registered successfully. Please check your email for verification.',
-                    'user': response.data,
-                    'email_sent': email_sent
-                }
-            return response
+                    # Send verification email - if this fails, rollback user creation
+                    email_sent = send_verification_email(user, request)
+
+                    if not email_sent:
+                        # Force transaction rollback by raising exception
+                        raise Exception("Failed to send verification email")
+
+                    response.data = {
+                        'message': 'User registered successfully. Please check your email for verification.',
+                        'user': response.data,
+                        'email_sent': email_sent
+                    }
+
+                return response
+
         except Exception as e:
             print(f"Registration error: {str(e)}")
             from rest_framework.response import Response
             from rest_framework import status
-            return Response({
-                'error': f'Registration failed: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # Return appropriate error message
+            if "verification email" in str(e).lower():
+                return Response({
+                    'error': 'Registration failed: Unable to send verification email. Please try again later.'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response({
+                    'error': f'Registration failed: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
