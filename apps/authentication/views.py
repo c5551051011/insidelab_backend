@@ -32,13 +32,18 @@ class RegisterView(generics.CreateAPIView):
     
     def create(self, request, *args, **kwargs):
         try:
-            # Skip email sending entirely for now - just register the user
             response = super().create(request, *args, **kwargs)
             if response.status_code == 201:
+                user_id = response.data.get('id')
+                user = User.objects.get(id=user_id)
+
+                # Send verification email
+                email_sent = send_verification_email(user, request)
+
                 response.data = {
-                    'message': 'User registered successfully (email verification temporarily disabled for debugging).',
+                    'message': 'User registered successfully. Please check your email for verification.',
                     'user': response.data,
-                    'email_sent': False
+                    'email_sent': email_sent
                 }
             return response
         except Exception as e:

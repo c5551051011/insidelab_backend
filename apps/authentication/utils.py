@@ -29,12 +29,19 @@ def send_verification_email(user, request=None):
         user.email_verification_sent_at = timezone.now()
         user.save()
 
-        # Get domain
+        # Get domain - robust method that works in production
         if request:
-            current_site = get_current_site(request)
-            domain = current_site.domain
-            protocol = 'https' if request.is_secure() else 'http'
+            try:
+                # Try to get host from request headers first
+                host = request.get_host()
+                protocol = 'https' if request.is_secure() else 'http'
+                domain = host
+            except Exception:
+                # Fallback for production environment
+                domain = 'insidelab.up.railway.app'
+                protocol = 'https'
         else:
+            # Default for local development or when no request
             domain = getattr(settings, 'SITE_DOMAIN', 'localhost:8000')
             protocol = 'http'
 
