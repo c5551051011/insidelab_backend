@@ -8,6 +8,8 @@ InsideLab에 가입해 주셔서 감사합니다!
 아래 링크를 클릭하여 인증을 완료해 주세요:
 {{ verification_url }}
 
+웹사이트로 돌아가기: https://c5551051011.github.io/insidelab_frontend/
+
 인증 후 이용 가능한 기능:
 ✓ 연구실 리뷰 작성 및 열람
 ✓ 교수님별 상세 평점 확인

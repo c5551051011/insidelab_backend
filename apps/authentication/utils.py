@@ -36,14 +36,19 @@ def send_verification_email(user, request=None):
                 host = request.get_host()
                 protocol = 'https' if request.is_secure() else 'http'
                 domain = host
+
+                # Force Railway domain for production
+                if 'railway' in host or 'localhost' not in host:
+                    domain = 'insidelab.up.railway.app'
+                    protocol = 'https'
             except Exception:
                 # Fallback for production environment
                 domain = 'insidelab.up.railway.app'
                 protocol = 'https'
         else:
-            # Default for local development or when no request
-            domain = getattr(settings, 'SITE_DOMAIN', 'localhost:8000')
-            protocol = 'http'
+            # Default for production deployment
+            domain = 'insidelab.up.railway.app'
+            protocol = 'https'
 
         # Generate URLs
         verification_url = f"{protocol}://{domain}{reverse('verify_email', kwargs={'token': verification_token})}"
