@@ -188,14 +188,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'authentication.User'
 
 # Email Configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+# Use Resend for Railway compatibility (no SMTP port restrictions)
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='apps.authentication.email_backends.ResendEmailBackend')
+
+# Resend API Configuration
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+
+# Fallback SMTP Configuration (for local development)
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='InsideLab <noreply@insidelab.com>')
+
+# Email From Address
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='InsideLab <onboarding@resend.dev>')
 
 # Site Configuration for email links
 SITE_DOMAIN = config('SITE_DOMAIN', default='localhost:8000')

@@ -29,16 +29,17 @@ def send_verification_email(user, request=None):
         user.email_verification_sent_at = timezone.now()
         user.save()
 
-        # Get domain - robust method that works in production
+        # Get domain - always use Railway for email links
         if request:
             try:
-                # Try to get host from request headers first
                 host = request.get_host()
-                protocol = 'https' if request.is_secure() else 'http'
-                domain = host
-
-                # Force Railway domain for production
-                if 'railway' in host or 'localhost' not in host:
+                # Always use Railway domain for email verification links
+                if 'localhost' in host or '127.0.0.1' in host:
+                    # For local development, still use Railway domain in emails
+                    domain = 'insidelab.up.railway.app'
+                    protocol = 'https'
+                else:
+                    # Production environment
                     domain = 'insidelab.up.railway.app'
                     protocol = 'https'
             except Exception:
