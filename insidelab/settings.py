@@ -203,7 +203,7 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 # Email From Address
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='InsideLab <onboarding@resend.dev>')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='InsideLab <noreply@insidelab.io>')
 
 # Site Configuration for email links
 SITE_DOMAIN = config('SITE_DOMAIN', default='localhost:8000')
