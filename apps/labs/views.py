@@ -20,7 +20,7 @@ class LabViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = LabFilter
     search_fields = ['name', 'professor__name', 'university__name', 'research_areas']
-    ordering_fields = ['overall_rating', 'review_count', 'created_at']
+    ordering_fields = ['overall_rating', 'review_count', 'created_at', 'name', 'professor__name', 'university__name', 'lab_size']
     ordering = ['-overall_rating', '-review_count']
     
     def get_queryset(self):
