@@ -17,6 +17,14 @@ class Lab(models.Model):
         related_name='labs'
     )
     department = models.CharField(max_length=200)
+    research_group = models.ForeignKey(
+        'universities.ResearchGroup',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='labs',
+        help_text='Optional research group this lab belongs to'
+    )
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)
     lab_size = models.IntegerField(null=True, blank=True)
@@ -42,6 +50,18 @@ class Lab(models.Model):
     def __str__(self):
         return f"{self.name} - {self.professor.name}"
 
+    def save(self, *args, **kwargs):
+        """Auto-populate research group from professor if not set"""
+        if not self.research_group and self.professor and self.professor.research_group:
+            self.research_group = self.professor.research_group
+
+        # Ensure university and department consistency
+        if self.professor:
+            self.university = self.professor.university
+            self.department = self.professor.department
+
+        super().save(*args, **kwargs)
+
     def update_rating(self):
         """Recalculate overall rating based on reviews"""
         from apps.reviews.models import Review
@@ -51,7 +71,7 @@ class Lab(models.Model):
                 avg_rating=models.Avg('rating')
             )['avg_rating']
             self.review_count = reviews.count()
-            self.save()
+            self.save(update_fields=['overall_rating', 'review_count'])
 
 
 class ResearchTopic(models.Model):

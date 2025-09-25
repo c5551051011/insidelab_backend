@@ -26,16 +26,18 @@ class RecruitmentStatusSerializer(serializers.ModelSerializer):
 class LabListSerializer(serializers.ModelSerializer):
     professor_name = serializers.CharField(source='professor.name', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
+    research_group_name = serializers.CharField(source='research_group.name', read_only=True)
     recruitment_status = RecruitmentStatusSerializer(read_only=True)
 
     class Meta:
         model = Lab
         fields = ['id', 'name', 'professor', 'professor_name', 'university', 'university_name',
-                 'department', 'description', 'website', 'lab_size', 'overall_rating', 'review_count',
-                 'research_areas', 'tags', 'recruitment_status']
+                 'department', 'research_group', 'research_group_name', 'description', 'website',
+                 'lab_size', 'overall_rating', 'review_count', 'research_areas', 'tags', 'recruitment_status']
         extra_kwargs = {
             'professor': {'write_only': True},
-            'university': {'write_only': True}
+            'university': {'write_only': True},
+            'research_group': {'write_only': True}
         }
 
 
