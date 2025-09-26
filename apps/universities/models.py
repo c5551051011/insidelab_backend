@@ -21,15 +21,73 @@ class University(models.Model):
         return self.name
 
 
-class ResearchGroup(models.Model):
-    """Research groups within university departments (e.g., AI Lab, Systems Group)"""
-    name = models.CharField(max_length=300)
+class Department(models.Model):
+    """Standard academic departments (e.g., Computer Science, Electrical Engineering)"""
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True)
+    common_names = models.JSONField(
+        default=list,
+        help_text="Alternative names for this department (e.g., 'CS', 'CompSci')"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'departments'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class UniversityDepartment(models.Model):
+    """Many-to-many relationship between universities and departments"""
     university = models.ForeignKey(
         University,
         on_delete=models.CASCADE,
-        related_name='research_groups'
+        related_name='university_departments'
     )
-    department = models.CharField(max_length=200)
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name='university_departments'
+    )
+    local_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="University-specific name if different from standard name"
+    )
+    website = models.URLField(blank=True)
+    head_name = models.CharField(max_length=200, blank=True)
+    established_year = models.IntegerField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'university_departments'
+        unique_together = ['university', 'department']
+        ordering = ['university__name', 'department__name']
+
+    def __str__(self):
+        if self.local_name:
+            return f"{self.local_name} - {self.university.name}"
+        return f"{self.department.name} - {self.university.name}"
+
+    @property
+    def display_name(self):
+        return self.local_name or self.department.name
+
+
+class ResearchGroup(models.Model):
+    """Research groups within university departments (e.g., AI Lab, Systems Group)"""
+    name = models.CharField(max_length=300)
+    university_department = models.ForeignKey(
+        UniversityDepartment,
+        on_delete=models.CASCADE,
+        related_name='research_groups',
+        null=True,
+        blank=True,
+        help_text='The specific university-department combination this group belongs to'
+    )
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)
     research_areas = models.JSONField(default=list)
@@ -45,22 +103,32 @@ class ResearchGroup(models.Model):
 
     class Meta:
         db_table = 'research_groups'
-        ordering = ['university__name', 'department', 'name']
-        unique_together = ['university', 'department', 'name']
+        ordering = ['university_department__university__name', 'university_department__department__name', 'name']
+        unique_together = ['university_department', 'name']
 
     def __str__(self):
-        return f"{self.name} - {self.department} - {self.university.name}"
+        return f"{self.name} - {self.university_department.display_name} - {self.university_department.university.name}"
+
+    @property
+    def university(self):
+        return self.university_department.university
+
+    @property
+    def department(self):
+        return self.university_department.department
 
 
 class Professor(models.Model):
     name = models.CharField(max_length=200)
     email = models.EmailField(blank=True, null=True)
-    university = models.ForeignKey(
-        University,
+    university_department = models.ForeignKey(
+        UniversityDepartment,
         on_delete=models.CASCADE,
-        related_name='professors'
+        related_name='professors',
+        null=True,
+        blank=True,
+        help_text='The specific university-department combination'
     )
-    department = models.CharField(max_length=200)
     research_group = models.ForeignKey(
         ResearchGroup,
         on_delete=models.SET_NULL,
@@ -69,6 +137,16 @@ class Professor(models.Model):
         related_name='professors',
         help_text='Optional research group within the department'
     )
+    # Legacy fields for migration compatibility
+    university = models.ForeignKey(
+        University,
+        on_delete=models.CASCADE,
+        related_name='legacy_professors',
+        null=True,
+        blank=True,
+        help_text='Legacy field - use university_department instead'
+    )
+    department = models.CharField(max_length=200, blank=True, help_text='Legacy field - use university_department instead')
     profile_url = models.URLField(blank=True)
     google_scholar_url = models.URLField(blank=True)
     personal_website = models.URLField(blank=True)

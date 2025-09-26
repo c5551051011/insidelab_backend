@@ -11,12 +11,14 @@ class Lab(models.Model):
         on_delete=models.CASCADE,
         related_name='labs'
     )
-    university = models.ForeignKey(
-        'universities.University',
+    university_department = models.ForeignKey(
+        'universities.UniversityDepartment',
         on_delete=models.CASCADE,
-        related_name='labs'
+        related_name='labs',
+        null=True,
+        blank=True,
+        help_text='The specific university-department combination'
     )
-    department = models.CharField(max_length=200)
     research_group = models.ForeignKey(
         'universities.ResearchGroup',
         on_delete=models.SET_NULL,
@@ -25,6 +27,16 @@ class Lab(models.Model):
         related_name='labs',
         help_text='Optional research group this lab belongs to'
     )
+    # Legacy fields for migration compatibility
+    university = models.ForeignKey(
+        'universities.University',
+        on_delete=models.CASCADE,
+        related_name='legacy_labs',
+        null=True,
+        blank=True,
+        help_text='Legacy field - use university_department instead'
+    )
+    department = models.CharField(max_length=200, blank=True, help_text='Legacy field - use university_department instead')
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)
     lab_size = models.IntegerField(null=True, blank=True)
@@ -51,14 +63,26 @@ class Lab(models.Model):
         return f"{self.name} - {self.professor.name}"
 
     def save(self, *args, **kwargs):
-        """Auto-populate research group from professor if not set"""
-        if not self.research_group and self.professor and self.professor.research_group:
-            self.research_group = self.professor.research_group
-
-        # Ensure university and department consistency
+        """Auto-populate university_department and research group from professor if not set"""
         if self.professor:
-            self.university = self.professor.university
-            self.department = self.professor.department
+            # Auto-populate university_department from professor
+            if not self.university_department and hasattr(self.professor, 'university_department'):
+                self.university_department = self.professor.university_department
+
+            # Auto-populate research group from professor
+            if not self.research_group and self.professor.research_group:
+                self.research_group = self.professor.research_group
+
+            # Update legacy fields for backward compatibility
+            if hasattr(self.professor, 'university_department') and self.professor.university_department:
+                self.university = self.professor.university_department.university
+                self.department = self.professor.university_department.display_name
+            else:
+                # Fallback to legacy fields if they exist
+                if hasattr(self.professor, 'university'):
+                    self.university = self.professor.university
+                if hasattr(self.professor, 'department'):
+                    self.department = self.professor.department
 
         super().save(*args, **kwargs)
 

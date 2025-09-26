@@ -57,10 +57,10 @@ class LabDetailSerializer(serializers.ModelSerializer):
         # Calculate rating breakdown from reviews
         from apps.reviews.models import Review
         reviews = Review.objects.filter(lab=obj)
-        
+
         if not reviews.exists():
             return None
-        
+
         categories = [
             'Mentorship Quality',
             'Research Environment',
@@ -69,16 +69,17 @@ class LabDetailSerializer(serializers.ModelSerializer):
             'Funding & Resources',
             'Collaboration Culture'
         ]
-        
+
         breakdown = {}
         for category in categories:
             ratings = []
             for review in reviews:
-                if category in review.category_ratings:
-                    ratings.append(review.category_ratings[category])
-            
+                category_ratings_dict = review.category_ratings_dict
+                if category in category_ratings_dict:
+                    ratings.append(category_ratings_dict[category])
+
             if ratings:
                 breakdown[category] = sum(ratings) / len(ratings)
-        
+
         return breakdown
 
