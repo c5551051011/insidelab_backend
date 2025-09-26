@@ -21,31 +21,35 @@ class UniversityViewSet(viewsets.ModelViewSet):
     def professors(self, request, pk=None):
         """Get all professors in a university"""
         university = self.get_object()
-        professors = Professor.objects.filter(university=university)
+        professors = Professor.objects.filter(university_department__university=university)
         serializer = ProfessorSerializer(professors, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['get'])
     def labs(self, request, pk=None):
         """Get all labs in a university"""
         from apps.labs.models import Lab
         from apps.labs.serializers import LabListSerializer
-        
+
         university = self.get_object()
-        labs = Lab.objects.filter(university=university)
+        labs = Lab.objects.filter(university_department__university=university)
         serializer = LabListSerializer(labs, many=True)
         return Response(serializer.data)
 
 
 class ResearchGroupViewSet(viewsets.ModelViewSet):
-    queryset = ResearchGroup.objects.select_related('university', 'head_professor').prefetch_related('professors', 'labs')
+    queryset = ResearchGroup.objects.select_related(
+        'university_department__university',
+        'university_department__department',
+        'head_professor'
+    ).prefetch_related('professors', 'labs')
     serializer_class = ResearchGroupSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['university', 'department']
-    search_fields = ['name', 'description', 'research_areas', 'department']
+    filterset_fields = ['university_department__university', 'university_department__department']
+    search_fields = ['name', 'description', 'research_areas']
     ordering_fields = ['name', 'created_at', 'professor_count', 'lab_count']
-    ordering = ['university__name', 'department', 'name']
+    ordering = ['university_department__university__name', 'university_department__department__name', 'name']
 
     @action(detail=True, methods=['get'])
     def professors(self, request, pk=None):
@@ -68,11 +72,15 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
 
 
 class ProfessorViewSet(viewsets.ModelViewSet):
-    queryset = Professor.objects.select_related('university', 'research_group')
+    queryset = Professor.objects.select_related(
+        'university_department__university',
+        'university_department__department',
+        'research_group'
+    )
     serializer_class = ProfessorSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['university', 'department', 'research_group']
+    filterset_fields = ['university_department__university', 'university_department__department', 'research_group']
     search_fields = ['name', 'research_interests']
     ordering_fields = ['name', 'created_at']
     ordering = ['name']
