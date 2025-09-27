@@ -72,6 +72,8 @@ class UniversityViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@method_decorator(cache_page(60 * 60 * 2), name='list')  # Cache list for 2 hours
+@method_decorator(cache_page(60 * 60), name='retrieve')  # Cache detail for 1 hour
 class ResearchGroupViewSet(viewsets.ModelViewSet):
     queryset = ResearchGroup.objects.select_related(
         'university_department__university',
@@ -86,6 +88,7 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name', 'created_at', 'professor_count', 'lab_count']
     ordering = ['university_department__university__name', 'university_department__department__name', 'name']
 
+    @cache_response('PROFESSORS')
     @action(detail=True, methods=['get'])
     def professors(self, request, pk=None):
         """Get all professors in this research group"""
@@ -94,6 +97,7 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
         serializer = ProfessorSerializer(professors, many=True)
         return Response(serializer.data)
 
+    @cache_response('LABS')
     @action(detail=True, methods=['get'])
     def labs(self, request, pk=None):
         """Get all labs in this research group"""
@@ -106,6 +110,8 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@method_decorator(cache_page(60 * 60 * 6), name='list')  # Cache list for 6 hours
+@method_decorator(cache_page(60 * 60 * 3), name='retrieve')  # Cache detail for 3 hours
 class ProfessorViewSet(viewsets.ModelViewSet):
     queryset = Professor.objects.select_related(
         'university_department__university',

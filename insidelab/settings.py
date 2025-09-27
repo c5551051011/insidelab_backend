@@ -65,54 +65,66 @@ DATABASES = {
 IS_RAILWAY = 'RAILWAY_ENVIRONMENT' in os.environ
 REDIS_URL = config('REDIS_URL', default=None)
 
-# Always try to use dummy cache to avoid Redis connection issues
-# Until Redis service is properly configured on Railway
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+# Smart cache configuration based on environment
+if IS_RAILWAY and REDIS_URL:
+    # Production Redis configuration for Railway
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {
+                    'retry_on_timeout': True,
+                    'socket_connect_timeout': 10,
+                    'socket_timeout': 10,
+                    'ssl_cert_reqs': None,
+                    'ssl_check_hostname': False,
+                },
+                'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            },
+            'KEY_PREFIX': 'insidelab',
+            'VERSION': 1,
+            'TIMEOUT': 300,
+        }
     }
-}
-
-# Uncomment below when Redis service is added to Railway project
-# if IS_RAILWAY and REDIS_URL:
-#     # Production Redis configuration for Railway
-#     CACHES = {
-#         'default': {
-#             'BACKEND': 'django_redis.cache.RedisCache',
-#             'LOCATION': REDIS_URL,
-#             'OPTIONS': {
-#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#                 'CONNECTION_POOL_KWARGS': {
-#                     'retry_on_timeout': True,
-#                     'socket_connect_timeout': 10,
-#                     'socket_timeout': 10,
-#                     'ssl_cert_reqs': None,
-#                     'ssl_check_hostname': False,
-#                 },
-#                 'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
-#                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
-#             },
-#             'KEY_PREFIX': 'insidelab',
-#             'VERSION': 1,
-#             'TIMEOUT': 300,
-#         }
-#     }
-# elif not IS_RAILWAY:
-#     # Local development Redis configuration
-#     CACHES = {
-#         'default': {
-#             'BACKEND': 'django_redis.cache.RedisCache',
-#             'LOCATION': 'redis://127.0.0.1:6379/1',
-#             'OPTIONS': {
-#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#                 'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
-#                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
-#             },
-#             'KEY_PREFIX': 'insidelab',
-#             'VERSION': 1,
-#             'TIMEOUT': 300,
-#         }
-#     }
+elif not IS_RAILWAY:
+    # Local development Redis configuration
+    try:
+        import redis
+        # Test Redis connection
+        r = redis.Redis(host='127.0.0.1', port=6379, db=1)
+        r.ping()
+        CACHES = {
+            'default': {
+                'BACKEND': 'django_redis.cache.RedisCache',
+                'LOCATION': 'redis://127.0.0.1:6379/1',
+                'OPTIONS': {
+                    'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                    'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+                    'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                },
+                'KEY_PREFIX': 'insidelab',
+                'VERSION': 1,
+                'TIMEOUT': 300,
+            }
+        }
+        print("✅ Redis cache enabled for local development")
+    except Exception as e:
+        print(f"⚠️ Redis not available, using DummyCache: {e}")
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
+        }
+else:
+    # Fallback to dummy cache when Redis is not available
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
 
 # Railway-specific cache timeouts (shorter for memory efficiency)
 if IS_RAILWAY:

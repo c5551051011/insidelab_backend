@@ -6,10 +6,16 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django.db.models import F, Avg
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from .models import Review, ReviewHelpful, RatingCategory, ReviewRating
 from .serializers import ReviewSerializer, ReviewHelpfulSerializer, RatingCategorySerializer
 from .permissions import IsOwnerOrReadOnly
+from apps.utils.cache import cache_response
 
+@method_decorator(cache_page(60 * 15), name='list')  # Cache list for 15 minutes
+@method_decorator(cache_page(60 * 30), name='retrieve')  # Cache detail for 30 minutes
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
@@ -68,6 +74,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@method_decorator(cache_page(60 * 60 * 12), name='list')  # Cache list for 12 hours
+@method_decorator(cache_page(60 * 60 * 12), name='retrieve')  # Cache detail for 12 hours
 class RatingCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for rating categories - read-only for API consumers"""
     serializer_class = RatingCategorySerializer
@@ -79,6 +87,7 @@ class RatingCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+@cache_page(60 * 60 * 12)  # Cache for 12 hours
 def get_review_categories(request):
     """Get available review categories for rating labs"""
     categories = RatingCategory.objects.filter(is_active=True).order_by('sort_order')
@@ -92,6 +101,7 @@ def get_review_categories(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+@cache_page(60 * 15)  # Cache for 15 minutes
 def get_lab_rating_averages(request, lab_id):
     """Get precomputed category-wise rating averages for a specific lab"""
     from apps.labs.models import Lab, LabCategoryAverage
@@ -137,6 +147,7 @@ def get_lab_rating_averages(request, lab_id):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+@cache_page(60 * 15)  # Cache for 15 minutes
 def compare_labs_averages(request):
     """Compare multiple labs by their category averages"""
     from apps.labs.models import Lab, LabCategoryAverage
