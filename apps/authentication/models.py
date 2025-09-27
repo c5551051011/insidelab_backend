@@ -6,11 +6,19 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=200, blank=True)
     university = models.ForeignKey(
-        'universities.University', 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        'universities.University',
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name='users'
+    )
+    university_department = models.ForeignKey(
+        'universities.UniversityDepartment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        help_text='University department where the user belongs'
     )
     position = models.CharField(
         max_length=50,
@@ -24,6 +32,7 @@ class User(AbstractUser):
         ],
         blank=True
     )
+    # Legacy department field - will be populated from university_department for backward compatibility
     department = models.CharField(max_length=200, blank=True)
     lab_name = models.CharField(max_length=300, blank=True)
     
@@ -63,17 +72,31 @@ class User(AbstractUser):
     class Meta:
         db_table = 'users'
 
+    def save(self, *args, **kwargs):
+        # Auto-populate legacy fields from university_department for backward compatibility
+        if self.university_department:
+            if not self.university:
+                self.university = self.university_department.university
+            if not self.department:
+                self.department = self.university_department.department.name
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.email
-    
+
     @property
     def display_name(self):
         return self.name or self.email.split('@')[0]
-    
+
     @property
     def verification_badge(self):
         if self.is_verified:
-            return f"✓ {self.university.name}" if self.university else "✓ Verified"
+            if self.university_department:
+                return f"✓ {self.university_department.department.name} - {self.university_department.university.name}"
+            elif self.university:
+                return f"✓ {self.university.name}"
+            else:
+                return "✓ Verified"
         return "Unverified"
 
 

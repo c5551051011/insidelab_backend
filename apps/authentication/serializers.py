@@ -8,25 +8,34 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(source='joined_date', read_only=True)
+    university_name = serializers.CharField(source='university.name', read_only=True)
+    university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
+    department_name = serializers.CharField(source='university_department.department.name', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'name', 'university', 'position',
-                 'department', 'lab_name', 'is_verified', 'verification_status',
+        fields = ('id', 'email', 'username', 'name', 'university', 'university_name',
+                 'university_department', 'university_department_name', 'department_name',
+                 'position', 'department', 'lab_name', 'is_verified', 'verification_status',
                  'is_lab_member', 'can_provide_services', 'review_count', 'helpful_votes',
                  'joined_date', 'created_at')
         read_only_fields = ('is_verified', 'verification_status', 'joined_date', 'created_at',
-                           'review_count', 'helpful_votes')
+                           'review_count', 'helpful_votes', 'university_name', 'university_department_name',
+                           'department_name')
+        extra_kwargs = {
+            'university': {'write_only': True},
+            'university_department': {'write_only': True}
+        }
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
-    
+
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password', 'password_confirm',
-                 'name', 'position', 'department')
+                 'name', 'position', 'university_department', 'department')
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
