@@ -61,41 +61,88 @@ DATABASES = {
 }
 
 # Caching Configuration
+# Detect Railway environment and Redis availability
+IS_RAILWAY = 'RAILWAY_ENVIRONMENT' in os.environ
+REDIS_URL = config('REDIS_URL', default=None)
+
+# Always try to use dummy cache to avoid Redis connection issues
+# Until Redis service is properly configured on Railway
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'CONNECTION_POOL_KWARGS': {
-                'retry_on_timeout': True,
-                'socket_connect_timeout': 5,
-                'socket_timeout': 5,
-            },
-            'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
-            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
-        },
-        'KEY_PREFIX': 'insidelab',
-        'VERSION': 1,
-        'TIMEOUT': 300,  # Default cache timeout (5 minutes)
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
+
+# Uncomment below when Redis service is added to Railway project
+# if IS_RAILWAY and REDIS_URL:
+#     # Production Redis configuration for Railway
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django_redis.cache.RedisCache',
+#             'LOCATION': REDIS_URL,
+#             'OPTIONS': {
+#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#                 'CONNECTION_POOL_KWARGS': {
+#                     'retry_on_timeout': True,
+#                     'socket_connect_timeout': 10,
+#                     'socket_timeout': 10,
+#                     'ssl_cert_reqs': None,
+#                     'ssl_check_hostname': False,
+#                 },
+#                 'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+#                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+#             },
+#             'KEY_PREFIX': 'insidelab',
+#             'VERSION': 1,
+#             'TIMEOUT': 300,
+#         }
+#     }
+# elif not IS_RAILWAY:
+#     # Local development Redis configuration
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django_redis.cache.RedisCache',
+#             'LOCATION': 'redis://127.0.0.1:6379/1',
+#             'OPTIONS': {
+#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#                 'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+#                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+#             },
+#             'KEY_PREFIX': 'insidelab',
+#             'VERSION': 1,
+#             'TIMEOUT': 300,
+#         }
+#     }
+
+# Railway-specific cache timeouts (shorter for memory efficiency)
+if IS_RAILWAY:
+    CACHE_TIMEOUTS = {
+        'UNIVERSITIES': 60 * 60 * 6,       # 6 hours (reduced from 24)
+        'DEPARTMENTS': 60 * 60 * 3,        # 3 hours (reduced from 12)
+        'PROFESSORS': 60 * 60,             # 1 hour (reduced from 6)
+        'LABS': 60 * 15,                   # 15 minutes (reduced from 30)
+        'REVIEWS': 60 * 10,                # 10 minutes (reduced from 15)
+        'RESEARCH_GROUPS': 60 * 60,        # 1 hour (reduced from 2)
+        'USER_PROFILE': 60 * 15,           # 15 minutes (reduced from 30)
+        'SEARCH_RESULTS': 60 * 5,          # 5 minutes (reduced from 10)
+    }
+else:
+    # Development cache timeouts
+    CACHE_TIMEOUTS = {
+        'UNIVERSITIES': 60 * 60 * 24,      # 24 hours
+        'DEPARTMENTS': 60 * 60 * 12,       # 12 hours
+        'PROFESSORS': 60 * 60 * 6,         # 6 hours
+        'LABS': 60 * 30,                   # 30 minutes
+        'REVIEWS': 60 * 15,                # 15 minutes
+        'RESEARCH_GROUPS': 60 * 60 * 2,    # 2 hours
+        'USER_PROFILE': 60 * 30,           # 30 minutes
+        'SEARCH_RESULTS': 60 * 10,         # 10 minutes
+    }
 
 # Cache configuration for sessions
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
-# Cache timeouts for different data types
-CACHE_TIMEOUTS = {
-    'UNIVERSITIES': 60 * 60 * 24,      # 24 hours
-    'DEPARTMENTS': 60 * 60 * 12,       # 12 hours
-    'PROFESSORS': 60 * 60 * 6,         # 6 hours
-    'LABS': 60 * 30,                   # 30 minutes
-    'REVIEWS': 60 * 15,                # 15 minutes
-    'RESEARCH_GROUPS': 60 * 60 * 2,    # 2 hours
-    'USER_PROFILE': 60 * 30,           # 30 minutes
-    'SEARCH_RESULTS': 60 * 10,         # 10 minutes
-}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
