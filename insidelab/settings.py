@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'apps.labs',
     'apps.reviews',
     'apps.universities',
+    'apps.utils',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,43 @@ DATABASES = {
         'CONN_MAX_AGE': 600,
         'CONN_HEALTH_CHECKS': True,
     }
+}
+
+# Caching Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'retry_on_timeout': True,
+                'socket_connect_timeout': 5,
+                'socket_timeout': 5,
+            },
+            'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+        },
+        'KEY_PREFIX': 'insidelab',
+        'VERSION': 1,
+        'TIMEOUT': 300,  # Default cache timeout (5 minutes)
+    }
+}
+
+# Cache configuration for sessions
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# Cache timeouts for different data types
+CACHE_TIMEOUTS = {
+    'UNIVERSITIES': 60 * 60 * 24,      # 24 hours
+    'DEPARTMENTS': 60 * 60 * 12,       # 12 hours
+    'PROFESSORS': 60 * 60 * 6,         # 6 hours
+    'LABS': 60 * 30,                   # 30 minutes
+    'REVIEWS': 60 * 15,                # 15 minutes
+    'RESEARCH_GROUPS': 60 * 60 * 2,    # 2 hours
+    'USER_PROFILE': 60 * 30,           # 30 minutes
+    'SEARCH_RESULTS': 60 * 10,         # 10 minutes
 }
 
 REST_FRAMEWORK = {

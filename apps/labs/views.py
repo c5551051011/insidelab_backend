@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg, Count, Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from .models import Lab, ResearchTopic, Publication, RecruitmentStatus
 from .serializers import (
     LabListSerializer, LabDetailSerializer,
@@ -14,7 +17,10 @@ from .serializers import (
     RecruitmentStatusSerializer
 )
 from .filters import LabFilter
+from apps.utils.cache import cache_response, CacheManager
 
+@method_decorator(cache_page(60 * 30), name='list')  # Cache list for 30 minutes
+@method_decorator(cache_page(60 * 60), name='retrieve')  # Cache detail for 1 hour
 class LabViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -41,6 +47,7 @@ class LabViewSet(viewsets.ModelViewSet):
             return LabDetailSerializer
         return LabListSerializer
     
+    @cache_response('LABS', timeout=60*60)  # Cache for 1 hour
     @action(detail=False, methods=['get'])
     def featured(self, request):
         """Get featured labs with high ratings and reviews"""
@@ -50,28 +57,29 @@ class LabViewSet(viewsets.ModelViewSet):
         )[:10]
         serializer = self.get_serializer(featured_labs, many=True)
         return Response(serializer.data)
-    
+
+    @cache_response('LABS', timeout=60*15)  # Cache for 15 minutes (recruiting status changes frequently)
     @action(detail=False, methods=['get'])
     def recruiting(self, request):
         """Get labs that are currently recruiting"""
         position = request.query_params.get('position', 'phd')
-        
+
         recruiting_labs = self.get_queryset().filter(
             recruitment_status__isnull=False
         )
-        
+
         if position == 'phd':
             recruiting_labs = recruiting_labs.filter(recruitment_status__is_recruiting_phd=True)
         elif position == 'postdoc':
             recruiting_labs = recruiting_labs.filter(recruitment_status__is_recruiting_postdoc=True)
         elif position == 'intern':
             recruiting_labs = recruiting_labs.filter(recruitment_status__is_recruiting_intern=True)
-        
+
         page = self.paginate_queryset(recruiting_labs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        
+
         serializer = self.get_serializer(recruiting_labs, many=True)
         return Response(serializer.data)
 
