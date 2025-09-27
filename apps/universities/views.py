@@ -5,8 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import University, Professor, ResearchGroup
-from .serializers import UniversitySerializer, ProfessorSerializer, ResearchGroupSerializer
+from .models import University, Professor, ResearchGroup, UniversityDepartment
+from .serializers import UniversitySerializer, ProfessorSerializer, ResearchGroupSerializer, UniversityDepartmentSerializer
 
 class UniversityViewSet(viewsets.ModelViewSet):
     queryset = University.objects.all()
@@ -17,6 +17,17 @@ class UniversityViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name', 'ranking']
     ordering = ['name']
     
+    @action(detail=True, methods=['get'])
+    def departments(self, request, pk=None):
+        """Get all departments in a university"""
+        university = self.get_object()
+        university_departments = UniversityDepartment.objects.filter(
+            university=university,
+            is_active=True
+        ).select_related('department', 'university').order_by('department__name')
+        serializer = UniversityDepartmentSerializer(university_departments, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['get'])
     def professors(self, request, pk=None):
         """Get all professors in a university"""

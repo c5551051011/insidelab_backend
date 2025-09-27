@@ -1,13 +1,25 @@
 
 # apps/universities/serializers.py
 from rest_framework import serializers
-from .models import University, Professor, ResearchGroup
+from .models import University, Professor, ResearchGroup, UniversityDepartment, Department
 
 
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = University
         fields = '__all__'
+
+
+class UniversityDepartmentSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.name', read_only=True)
+    university_name = serializers.CharField(source='university.name', read_only=True)
+
+    class Meta:
+        model = UniversityDepartment
+        fields = ['id', 'department', 'department_name', 'university', 'university_name',
+                 'local_name', 'display_name', 'website', 'head_name', 'established_year',
+                 'is_active', 'created_at']
+        read_only_fields = ['display_name']
 
 
 class ResearchGroupSerializer(serializers.ModelSerializer):
