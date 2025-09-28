@@ -83,7 +83,7 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
     serializer_class = ResearchGroupSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['university_department__university', 'university_department__department']
+    filterset_fields = ['university_department__university', 'university_department__department', 'university_department']
     search_fields = ['name', 'description', 'research_areas']
     ordering_fields = ['name', 'created_at', 'professor_count', 'lab_count']
     ordering = ['university_department__university__name', 'university_department__department__name', 'name']
