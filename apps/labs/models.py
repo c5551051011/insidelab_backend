@@ -116,8 +116,8 @@ class ResearchTopic(models.Model):
 
 class Publication(models.Model):
     lab = models.ForeignKey(
-        Lab, 
-        on_delete=models.CASCADE, 
+        Lab,
+        on_delete=models.CASCADE,
         related_name='recent_publications'
     )
     title = models.CharField(max_length=500)
@@ -130,7 +130,7 @@ class Publication(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'publications'
+        db_table = 'lab_publications'  # Changed from 'publications' to avoid conflict
         ordering = ['-year', '-citations']
 
 

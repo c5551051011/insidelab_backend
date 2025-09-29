@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 import secrets
+from .models import UserLabInterest
 
 User = get_user_model()
 
@@ -52,3 +53,52 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         # TODO: Send verification email
         return user
+
+
+class UserLabInterestSerializer(serializers.ModelSerializer):
+    """Serializer for user lab interests"""
+    lab_name = serializers.CharField(source='lab.name', read_only=True)
+    lab_professor = serializers.CharField(source='lab.professor.name', read_only=True)
+    lab_university = serializers.CharField(source='lab.university_department.university.name', read_only=True)
+    lab_department = serializers.CharField(source='lab.university_department.department.name', read_only=True)
+    lab_rating = serializers.DecimalField(source='lab.overall_rating', max_digits=3, decimal_places=2, read_only=True)
+    user_display_name = serializers.CharField(source='user.display_name', read_only=True)
+
+    class Meta:
+        model = UserLabInterest
+        fields = [
+            'id', 'lab', 'lab_name', 'lab_professor', 'lab_university', 'lab_department', 'lab_rating',
+            'interest_type', 'notes', 'created_at', 'updated_at', 'user_display_name'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user_display_name']
+
+    def create(self, validated_data):
+        # Auto-assign the current user
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class UserLabInterestCreateSerializer(serializers.ModelSerializer):
+    """Simplified serializer for creating lab interests"""
+
+    class Meta:
+        model = UserLabInterest
+        fields = ['lab', 'interest_type', 'notes']
+
+    def create(self, validated_data):
+        # Auto-assign the current user
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+    def validate(self, attrs):
+        # Check if user already has interest in this lab
+        user = self.context['request'].user
+        lab = attrs['lab']
+
+        if UserLabInterest.objects.filter(user=user, lab=lab).exists():
+            # If updating, allow it
+            if self.instance:
+                return attrs
+            raise serializers.ValidationError("You already have an interest recorded for this lab.")
+
+        return attrs

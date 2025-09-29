@@ -1,6 +1,6 @@
 # apps/authentication/views.py
-from rest_framework import status, generics
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status, generics, viewsets
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -8,7 +8,11 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from .serializers import UserSerializer, RegisterSerializer
+from .serializers import (
+    UserSerializer, RegisterSerializer, UserLabInterestSerializer,
+    UserLabInterestCreateSerializer
+)
+from .models import UserLabInterest
 from .utils import send_verification_email, verify_email_token
 from .utils import resend_verification_email as resend_email_util
 
@@ -268,3 +272,132 @@ def google_auth(request):
         'refresh': str(refresh),
         'user': UserSerializer(user).data
     })
+
+
+class UserLabInterestViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing user lab interests"""
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own lab interests
+        return UserLabInterest.objects.filter(user=self.request.user).select_related(
+            'lab', 'lab__professor', 'lab__university_department__university',
+            'lab__university_department__department'
+        )
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserLabInterestCreateSerializer
+        return UserLabInterestSerializer
+
+    def perform_create(self, serializer):
+        # Auto-assign the current user
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Get summary of user's lab interests"""
+        interests = self.get_queryset()
+
+        # Group by interest type
+        summary = {}
+        for interest in interests:
+            interest_type = interest.interest_type
+            if interest_type not in summary:
+                summary[interest_type] = []
+
+            summary[interest_type].append({
+                'id': interest.id,
+                'lab_id': interest.lab.id,
+                'lab_name': interest.lab.name,
+                'lab_professor': interest.lab.professor.name,
+                'lab_rating': float(interest.lab.overall_rating),
+                'created_at': interest.created_at
+            })
+
+        return Response({
+            'total_interests': interests.count(),
+            'by_type': summary,
+            'interest_types': [
+                {'value': 'general', 'label': 'General Interest'},
+                {'value': 'application', 'label': 'Considering Application'},
+                {'value': 'watching', 'label': 'Watching for Updates'},
+                {'value': 'recruited', 'label': 'Applied/Recruited'},
+            ]
+        })
+
+    @action(detail=False, methods=['post'])
+    def toggle_interest(self, request):
+        """Toggle interest in a lab (add if not exists, remove if exists)"""
+        lab_id = request.data.get('lab_id')
+        interest_type = request.data.get('interest_type', 'general')
+
+        if not lab_id:
+            return Response(
+                {'error': 'lab_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            from apps.labs.models import Lab
+            lab = Lab.objects.get(id=lab_id)
+        except Lab.DoesNotExist:
+            return Response(
+                {'error': 'Lab not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Check if interest already exists
+        interest, created = UserLabInterest.objects.get_or_create(
+            user=request.user,
+            lab=lab,
+            defaults={
+                'interest_type': interest_type,
+                'notes': request.data.get('notes', '')
+            }
+        )
+
+        if created:
+            serializer = UserLabInterestSerializer(interest)
+            return Response({
+                'action': 'added',
+                'interest': serializer.data
+            }, status=status.HTTP_201_CREATED)
+        else:
+            # Update existing interest
+            interest.interest_type = interest_type
+            interest.notes = request.data.get('notes', interest.notes)
+            interest.save()
+
+            serializer = UserLabInterestSerializer(interest)
+            return Response({
+                'action': 'updated',
+                'interest': serializer.data
+            })
+
+    @action(detail=False, methods=['delete'])
+    def remove_interest(self, request):
+        """Remove interest in a lab"""
+        lab_id = request.query_params.get('lab_id')
+
+        if not lab_id:
+            return Response(
+                {'error': 'lab_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            interest = UserLabInterest.objects.get(
+                user=request.user,
+                lab_id=lab_id
+            )
+            interest.delete()
+            return Response({
+                'action': 'removed',
+                'message': 'Lab interest removed successfully'
+            })
+        except UserLabInterest.DoesNotExist:
+            return Response(
+                {'error': 'Interest not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )

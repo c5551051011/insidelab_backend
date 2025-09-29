@@ -24,6 +24,7 @@ INSTALLED_APPS = [
 
     'apps.authentication',
     'apps.labs',
+    'apps.publications',
     'apps.reviews',
     'apps.universities',
     'apps.utils',

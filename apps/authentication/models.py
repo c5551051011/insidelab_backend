@@ -100,3 +100,38 @@ class User(AbstractUser):
         return "Unverified"
 
 
+class UserLabInterest(models.Model):
+    """Track labs that users are interested in"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='lab_interests'
+    )
+    lab = models.ForeignKey(
+        'labs.Lab',
+        on_delete=models.CASCADE,
+        related_name='interested_users'
+    )
+    interest_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('general', 'General Interest'),
+            ('application', 'Considering Application'),
+            ('watching', 'Watching for Updates'),
+            ('recruited', 'Applied/Recruited'),
+        ],
+        default='general'
+    )
+    notes = models.TextField(blank=True, help_text='Personal notes about interest in this lab')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_lab_interests'
+        unique_together = ['user', 'lab']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.display_name} interested in {self.lab.name}"
+
+
