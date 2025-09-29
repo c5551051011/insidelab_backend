@@ -30,13 +30,14 @@ class LabListSerializer(serializers.ModelSerializer):
     recruitment_status = RecruitmentStatusSerializer(read_only=True)
     university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
+    department_local_name = serializers.CharField(source='university_department.local_name', read_only=True)
 
     class Meta:
         model = Lab
         fields = ['id', 'name', 'professor', 'professor_name', 'university', 'university_name',
                  'department', 'research_group', 'research_group_name', 'description', 'website',
                  'lab_size', 'overall_rating', 'review_count', 'research_areas', 'tags', 'recruitment_status',
-                 'university_department', 'university_department_name', 'department_name']
+                 'university_department', 'university_department_name', 'department_name', 'department_local_name']
         extra_kwargs = {
             'professor': {'write_only': True},
             'university': {'write_only': True},
@@ -50,6 +51,7 @@ class LabDetailSerializer(serializers.ModelSerializer):
     university_name = serializers.CharField(source='university.name', read_only=True)
     university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
+    department_local_name = serializers.CharField(source='university_department.local_name', read_only=True)
     research_topics = ResearchTopicSerializer(many=True, read_only=True)
     recent_publications = PublicationSerializer(many=True, read_only=True)
     recruitment_status = RecruitmentStatusSerializer(read_only=True)
