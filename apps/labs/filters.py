@@ -7,7 +7,9 @@ class LabFilter(django_filters.FilterSet):
     min_rating = django_filters.NumberFilter(field_name='overall_rating', lookup_expr='gte')
     max_rating = django_filters.NumberFilter(field_name='overall_rating', lookup_expr='lte')
     university = django_filters.CharFilter(field_name='university__id')
+    university_department = django_filters.NumberFilter(field_name='university_department__id')
     professor = django_filters.CharFilter(field_name='professor__id')
+    research_group = django_filters.NumberFilter(field_name='research_group__id')
     research_area = django_filters.CharFilter(method='filter_research_area')
     tag = django_filters.CharFilter(method='filter_tag')
     recruiting_phd = django_filters.BooleanFilter(

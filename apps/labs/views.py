@@ -83,3 +83,25 @@ class LabViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(recruiting_labs, many=True)
         return Response(serializer.data)
 
+    @cache_response('LABS', timeout=60*30)  # Cache for 30 minutes
+    @action(detail=False, methods=['get'])
+    def by_research_group(self, request):
+        """Get labs by research group"""
+        research_group_id = request.query_params.get('research_group_id')
+
+        if not research_group_id:
+            return Response(
+                {'error': 'research_group_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        labs = self.get_queryset().filter(research_group_id=research_group_id)
+
+        page = self.paginate_queryset(labs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(labs, many=True)
+        return Response(serializer.data)
+
