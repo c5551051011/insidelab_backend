@@ -15,6 +15,7 @@ from .serializers import (
 from .models import UserLabInterest
 from .utils import send_verification_email, verify_email_token
 from .utils import resend_verification_email as resend_email_util
+from .university_verification import UniversityEmailVerification
 
 User = get_user_model()
 
@@ -401,3 +402,118 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
                 {'error': 'Interest not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+# University Email Verification Endpoints
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_university_verification(request):
+    """Send university email verification (like Blind)"""
+    university_email = request.data.get('university_email')
+
+    if not university_email:
+        return Response({
+            'error': 'University email is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if email domain is supported
+    if not UniversityEmailVerification.is_university_email(university_email):
+        return Response({
+            'error': 'This email domain is not supported. Please contact support to add your university.',
+            'can_request_domain': True
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Send verification email
+    success, message = UniversityEmailVerification.send_university_verification_email(
+        request.user, university_email, request
+    )
+
+    if success:
+        return Response({
+            'message': message,
+            'university_email': university_email,
+            'university': UniversityEmailVerification.get_university_by_email(university_email).name
+        })
+    else:
+        return Response({
+            'error': message
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_university_email(request, token):
+    """Verify university email using token"""
+    success, result = UniversityEmailVerification.verify_university_email_token(token)
+
+    if success:
+        user = result
+        return Response({
+            'message': 'University email verified successfully!',
+            'university': user.verified_university.name if user.verified_university else None,
+            'verified_email': user.university_email
+        })
+    else:
+        return Response({
+            'error': result
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def resend_university_verification(request):
+    """Resend university verification email"""
+    success, message = UniversityEmailVerification.resend_university_verification(request.user)
+
+    if success:
+        return Response({'message': message})
+    else:
+        return Response({
+            'error': message
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def request_university_domain(request):
+    """Request addition of new university domain"""
+    university_email = request.data.get('university_email')
+    university_name = request.data.get('university_name')
+    notes = request.data.get('notes', '')
+
+    if not university_email or not university_name:
+        return Response({
+            'error': 'University email and name are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    success, message = UniversityEmailVerification.request_new_university_domain(
+        university_email, university_name, request.user.display_name, notes
+    )
+
+    if success:
+        return Response({'message': message})
+    else:
+        return Response({
+            'error': message
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def check_university_email(request):
+    """Check if email domain is supported (public endpoint)"""
+    email = request.data.get('email')
+
+    if not email:
+        return Response({
+            'error': 'Email is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    is_supported = UniversityEmailVerification.is_university_email(email)
+    university = UniversityEmailVerification.get_university_by_email(email)
+
+    return Response({
+        'is_supported': is_supported,
+        'university': university.name if university else None,
+        'can_verify': is_supported
+    })

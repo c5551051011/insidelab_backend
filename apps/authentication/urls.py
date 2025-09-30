@@ -7,7 +7,9 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView, CustomTokenObtainPairView, verify_email,
     get_current_user, update_profile, google_auth, resend_verification_email,
-    unsubscribe, test_registration, UserLabInterestViewSet
+    unsubscribe, test_registration, UserLabInterestViewSet,
+    send_university_verification, verify_university_email, resend_university_verification,
+    request_university_domain, check_university_email
 )
 
 # Create router for ViewSets
@@ -25,6 +27,14 @@ urlpatterns = [
     path('user/', get_current_user, name='get_current_user'),
     path('profile/', update_profile, name='update_profile'),
     path('google/', google_auth, name='google_auth'),
+
+    # University email verification endpoints
+    path('university/send-verification/', send_university_verification, name='send_university_verification'),
+    path('university/verify/<str:token>/', verify_university_email, name='verify_university_email'),
+    path('university/resend-verification/', resend_university_verification, name='resend_university_verification'),
+    path('university/request-domain/', request_university_domain, name='request_university_domain'),
+    path('university/check-email/', check_university_email, name='check_university_email'),
+
     # Include ViewSet URLs
     path('', include(router.urls)),
 ]

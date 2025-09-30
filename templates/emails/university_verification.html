@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your University Email - InsideLab</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .university-info {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2563eb;
+        }
+        .verify-button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .verify-button:hover {
+            background: #1d4ed8;
+        }
+        .security-notice {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .token-info {
+            font-family: monospace;
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎓 InsideLab</div>
+        <p>University Email Verification</p>
+    </div>
+
+    <p>Hello,</p>
+
+    <p>You've requested to verify your university email address for InsideLab. This verification ensures you're affiliated with a recognized academic institution.</p>
+
+    {% if university %}
+    <div class="university-info">
+        <h3>🏛️ University Information</h3>
+        <p><strong>University:</strong> {{ university.name }}</p>
+        <p><strong>Email:</strong> {{ university_email }}</p>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ verification_url }}" class="verify-button">
+            ✅ Verify University Email
+        </a>
+    </div>
+
+    <div class="security-notice">
+        <strong>🔒 Security Notice:</strong>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>This verification link expires in {{ expires_hours }} hours</li>
+            <li>Only click if you requested this verification</li>
+            <li>Your university affiliation will be verified but kept private</li>
+            <li>Similar to Blind's verification system</li>
+        </ul>
+    </div>
+
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <div class="token-info">{{ verification_url }}</div>
+
+    <p><strong>Why verify your university email?</strong></p>
+    <ul>
+        <li>Access university-specific lab reviews and information</li>
+        <li>Connect with students and researchers from your institution</li>
+        <li>Enhanced credibility for your reviews and posts</li>
+        <li>Participate in university-verified discussions</li>
+    </ul>
+
+    <div class="footer">
+        <p>If you didn't request this verification, please ignore this email.</p>
+        <p>If you have questions, contact us at support@insidelab.com</p>
+
+        <p style="margin-top: 20px;">
+            <strong>InsideLab Team</strong><br>
+            Making academic research more transparent
+        </p>
+
+        <p style="font-size: 12px; margin-top: 20px;">
+            Verification Token: {{ token }}<br>
+            This email was sent to: {{ university_email }}
+        </p>
+    </div>
+</body>
+</html>

@@ -164,3 +164,80 @@ class Professor(models.Model):
             return f"{self.name} - {self.research_group.name} - {self.university.name}"
         return f"{self.name} - {self.department} - {self.university.name}"
 
+
+class UniversityEmailDomain(models.Model):
+    """University email domains for verification"""
+    university = models.ForeignKey(
+        University,
+        on_delete=models.CASCADE,
+        related_name='email_domains'
+    )
+    domain = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="Email domain (e.g., kaist.ac.kr, snu.ac.kr)"
+    )
+    is_active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="Whether this domain has been verified as legitimate"
+    )
+    verification_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('official', 'Official University Domain'),
+            ('student', 'Student Email Domain'),
+            ('faculty', 'Faculty Email Domain'),
+            ('staff', 'Staff Email Domain'),
+            ('alumni', 'Alumni Email Domain'),
+        ],
+        default='official'
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Additional notes about this domain"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'university_email_domains'
+        ordering = ['university__name', 'domain']
+        indexes = [
+            models.Index(fields=['domain']),
+            models.Index(fields=['university', 'is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.university.name} - {self.domain}"
+
+    @classmethod
+    def is_university_email(cls, email):
+        """Check if email domain belongs to a university"""
+        if '@' not in email:
+            return False
+
+        domain = email.split('@')[1].lower()
+        return cls.objects.filter(
+            domain__iexact=domain,
+            is_active=True,
+            is_verified=True
+        ).exists()
+
+    @classmethod
+    def get_university_by_email(cls, email):
+        """Get university by email domain"""
+        if '@' not in email:
+            return None
+
+        domain = email.split('@')[1].lower()
+        try:
+            domain_obj = cls.objects.get(
+                domain__iexact=domain,
+                is_active=True,
+                is_verified=True
+            )
+            return domain_obj.university
+        except cls.DoesNotExist:
+            return None
+

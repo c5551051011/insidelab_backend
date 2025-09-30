@@ -54,6 +54,20 @@ class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=100, blank=True)
     email_verification_sent_at = models.DateTimeField(null=True, blank=True)
+
+    # University email verification
+    university_email = models.EmailField(blank=True, null=True, help_text="University email for verification")
+    university_email_verified = models.BooleanField(default=False)
+    university_email_verification_token = models.CharField(max_length=100, blank=True)
+    university_email_verification_sent_at = models.DateTimeField(null=True, blank=True)
+    verified_university = models.ForeignKey(
+        'universities.University',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_users',
+        help_text='University verified through email domain'
+    )
     
     # Service provider capabilities
     is_lab_member = models.BooleanField(default=False)
