@@ -173,3 +173,58 @@ def is_email_verified(user):
         bool: True if email is verified
     """
     return user.email_verified if user else False
+
+
+def send_feedback_email(user_email, user_name, subject, message, user_type="user"):
+    """
+    Send feedback email to InsideLab team
+
+    Args:
+        user_email: User's email address
+        user_name: User's name
+        subject: Email subject from client
+        message: Feedback message from client
+        user_type: Type of user (user, anonymous, etc.)
+
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        # Email context for feedback
+        context = {
+            'user_email': user_email,
+            'user_name': user_name or user_email.split('@')[0],
+            'user_type': user_type,
+            'feedback_subject': subject,
+            'feedback_message': message,
+            'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S UTC'),
+        }
+
+        # Render templates
+        html_content = render_to_string('emails/feedback.html', context)
+        text_content = render_to_string('emails/feedback.txt', context)
+
+        # Email subject for internal team
+        email_subject = f'🔬 InsideLab Feedback: {subject}'
+
+        # Create email to InsideLab team
+        email = EmailMultiAlternatives(
+            subject=email_subject,
+            body=text_content,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'InsideLab <noreply@insidelab.com>'),
+            to=['insidelab25@gmail.com'],
+            reply_to=[user_email]  # Allow team to reply directly to user
+        )
+
+        # Attach HTML version
+        email.attach_alternative(html_content, "text/html")
+
+        # Send email
+        email.send()
+
+        logger.info(f"Feedback email sent successfully from {user_email} with subject: {subject}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to send feedback email from {user_email}: {str(e)}")
+        return False

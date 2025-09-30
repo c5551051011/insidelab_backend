@@ -15,6 +15,7 @@ from .serializers import (
 from .models import UserLabInterest
 from .utils import send_verification_email, verify_email_token
 from .utils import resend_verification_email as resend_email_util
+from .utils import send_feedback_email
 from .university_verification import UniversityEmailVerification
 
 User = get_user_model()
@@ -517,3 +518,74 @@ def check_university_email(request):
         'university': university.name if university else None,
         'can_verify': is_supported
     })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_feedback(request):
+    """Send feedback email to InsideLab team"""
+    user_email = request.data.get('email')
+    user_name = request.data.get('name', '')
+    subject = request.data.get('subject')
+    message = request.data.get('message')
+
+    # Validate required fields
+    if not user_email:
+        return Response({
+            'error': 'Email is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if not subject:
+        return Response({
+            'error': 'Subject is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if not message:
+        return Response({
+            'error': 'Message is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate email format
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, user_email):
+        return Response({
+            'error': 'Invalid email format'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Determine user type (authenticated vs anonymous)
+    user_type = "authenticated" if request.user.is_authenticated else "anonymous"
+    if request.user.is_authenticated:
+        # Use authenticated user's info if different from provided
+        actual_name = request.user.name or user_name
+        actual_email = request.user.email
+    else:
+        actual_name = user_name
+        actual_email = user_email
+
+    # Send feedback email
+    try:
+        success = send_feedback_email(
+            user_email=actual_email,
+            user_name=actual_name,
+            subject=subject,
+            message=message,
+            user_type=user_type
+        )
+
+        if success:
+            return Response({
+                'message': 'Feedback sent successfully. Thank you for your input!',
+                'success': True
+            })
+        else:
+            return Response({
+                'error': 'Failed to send feedback. Please try again later.',
+                'success': False
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    except Exception as e:
+        return Response({
+            'error': 'An error occurred while sending feedback',
+            'success': False
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
