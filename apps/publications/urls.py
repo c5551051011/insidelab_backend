@@ -7,7 +7,7 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r'publications', PublicationViewSet, basename='publication')
+router.register(r'', PublicationViewSet, basename='publication')  # Empty prefix for main endpoint
 router.register(r'authors', AuthorViewSet, basename='author')
 router.register(r'venues', VenueViewSet, basename='venue')
 router.register(r'research-areas', ResearchAreaViewSet, basename='research-area')

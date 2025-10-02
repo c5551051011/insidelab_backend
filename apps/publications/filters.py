@@ -16,10 +16,7 @@ class PublicationFilter(django_filters.FilterSet):
     max_citations = django_filters.NumberFilter(field_name='citation_count', lookup_expr='lte')
 
     # 학회/저널 필터
-    venue = django_filters.ModelChoiceFilter(
-        field_name='venues',
-        queryset=Venue.objects.all()
-    )
+    venue = django_filters.NumberFilter(field_name='venues')
     venue_tier = django_filters.ChoiceFilter(
         field_name='venues__tier',
         choices=Venue.TIER_CHOICES
@@ -30,21 +27,14 @@ class PublicationFilter(django_filters.FilterSet):
     )
 
     # 저자 필터
-    author = django_filters.ModelChoiceFilter(
-        field_name='authors',
-        queryset=Author.objects.all()
-    )
-    first_author = django_filters.ModelChoiceFilter(
-        field_name='authors',
-        queryset=Author.objects.all(),
-        method='filter_first_author'
-    )
+    author = django_filters.NumberFilter(field_name='authors')
+    first_author = django_filters.NumberFilter(method='filter_first_author')
 
     # 연구실 필터
-    lab = django_filters.ModelChoiceFilter(field_name='labs')
+    lab = django_filters.NumberFilter(field_name='labs')
 
     # 연구 분야 필터
-    research_area = django_filters.ModelChoiceFilter(field_name='research_areas')
+    research_area = django_filters.NumberFilter(field_name='research_areas')
 
     # 오픈 액세스 필터
     open_access = django_filters.BooleanFilter(field_name='is_open_access')
@@ -74,8 +64,7 @@ class PublicationFilter(django_filters.FilterSet):
     class Meta:
         model = Publication
         fields = [
-            'publication_year', 'language', 'is_open_access',
-            'venues', 'authors', 'research_areas', 'labs'
+            'publication_year', 'language', 'is_open_access'
         ]
 
     def filter_first_author(self, queryset, name, value):

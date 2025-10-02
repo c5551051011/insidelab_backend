@@ -30,8 +30,8 @@ from apps.utils.cache import cache_response
 class PublicationViewSet(viewsets.ModelViewSet):
     """논문 관리 ViewSet"""
     permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = PublicationFilter
+    # filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    # filterset_class = PublicationFilter  # Temporarily disabled
     search_fields = ['title', 'abstract', 'authors__name', 'venues__name', 'keywords', 'additional_notes']
     ordering_fields = [
         'publication_year', 'citation_count', 'h_index_contribution',
