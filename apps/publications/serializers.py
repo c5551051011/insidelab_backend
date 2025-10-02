@@ -120,6 +120,7 @@ class PublicationListSerializer(serializers.ModelSerializer):
             'id', 'title', 'publication_year', 'citation_count',
             'first_author_name', 'primary_venue_name', 'primary_venue_tier',
             'author_count', 'research_area_names',
+            'keywords', 'additional_notes',
             'paper_url', 'is_open_access', 'created_at'
         ]
 
@@ -174,6 +175,7 @@ class PublicationDetailSerializer(serializers.ModelSerializer):
             'citation_count', 'h_index_contribution',
             'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
             'page_count', 'language', 'is_open_access',
+            'keywords', 'additional_notes',
             'authors_detail', 'venues_detail', 'research_areas_detail', 'labs_detail',
             'first_author', 'corresponding_author', 'primary_venue',
             'citation_history', 'created_at', 'updated_at'

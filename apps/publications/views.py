@@ -6,13 +6,14 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.db.models import Count, Avg, Q, F
+from django.db.models import Count, Avg, Q, F, Sum
 from django.db.models.functions import Extract
 from datetime import datetime, timedelta
 
 from .models import (
     Publication, Author, Venue, ResearchArea,
-    CitationMetric, Collaboration, LabPublicationStats
+    CitationMetric, Collaboration, LabPublicationStats,
+    PublicationAuthor, PublicationVenue, PublicationResearchArea
 )
 from .serializers import (
     PublicationListSerializer, PublicationDetailSerializer,
@@ -31,7 +32,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = PublicationFilter
-    search_fields = ['title', 'abstract', 'authors__name', 'venues__name']
+    search_fields = ['title', 'abstract', 'authors__name', 'venues__name', 'keywords', 'additional_notes']
     ordering_fields = [
         'publication_year', 'citation_count', 'h_index_contribution',
         'created_at', 'title'
@@ -206,6 +207,307 @@ class PublicationViewSet(viewsets.ModelViewSet):
                 for area in research_area_stats
             ]
         })
+
+    @cache_response('PUBLICATIONS', timeout=60*60)
+    @action(detail=False, methods=['get'])
+    def by_professor(self, request):
+        """교수님별 논문 분석"""
+        professor_id = request.query_params.get('professor_id')
+        if not professor_id:
+            return Response(
+                {'error': 'professor_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 교수님의 논문들 (연구실을 통한 연결)
+        publications = self.get_queryset().filter(
+            Q(labs__professor_id=professor_id) |
+            Q(authors__publications__labs__professor_id=professor_id)
+        ).distinct()
+
+        # 년도별 필터링
+        year_from = request.query_params.get('year_from')
+        year_to = request.query_params.get('year_to')
+        if year_from:
+            publications = publications.filter(publication_year__gte=int(year_from))
+        if year_to:
+            publications = publications.filter(publication_year__lte=int(year_to))
+
+        # 키워드 필터링
+        keywords = request.query_params.get('keywords')
+        if keywords:
+            keyword_list = [k.strip() for k in keywords.split(',')]
+            q_objects = Q()
+            for keyword in keyword_list:
+                if keyword:
+                    q_objects |= Q(keywords__icontains=keyword)
+            publications = publications.filter(q_objects)
+
+        # 기본 통계
+        total_count = publications.count()
+        total_citations = publications.aggregate(
+            total=Sum('citation_count')
+        )['total'] or 0
+
+        # 연도별 통계
+        yearly_stats = publications.values('publication_year').annotate(
+            count=Count('id'),
+            avg_citations=Avg('citation_count'),
+            total_citations=Sum('citation_count')
+        ).order_by('-publication_year')
+
+        # 키워드별 통계
+        all_keywords = []
+        for pub in publications.values_list('keywords', flat=True):
+            if pub:
+                all_keywords.extend(pub)
+
+        keyword_stats = {}
+        for keyword in all_keywords:
+            if keyword in keyword_stats:
+                keyword_stats[keyword] += 1
+            else:
+                keyword_stats[keyword] = 1
+
+        # 상위 키워드 10개
+        top_keywords = sorted(keyword_stats.items(), key=lambda x: x[1], reverse=True)[:10]
+
+        # 탑 논문들
+        top_papers = publications.order_by('-citation_count')[:10]
+        top_papers_data = self.get_serializer(top_papers, many=True).data
+
+        # 수상 논문들
+        award_papers = publications.exclude(additional_notes='').order_by('-publication_year')[:5]
+        award_papers_data = self.get_serializer(award_papers, many=True).data
+
+        return Response({
+            'professor_id': professor_id,
+            'total_publications': total_count,
+            'total_citations': total_citations,
+            'avg_citations_per_paper': total_citations / total_count if total_count > 0 else 0,
+            'yearly_statistics': list(yearly_stats),
+            'top_keywords': [{'keyword': k, 'count': v} for k, v in top_keywords],
+            'top_publications': top_papers_data,
+            'award_publications': award_papers_data
+        })
+
+    @cache_response('PUBLICATIONS', timeout=60*30)
+    @action(detail=False, methods=['get'])
+    def by_keywords(self, request):
+        """키워드별 논문 검색 및 분석"""
+        keywords = request.query_params.get('keywords')
+        if not keywords:
+            return Response(
+                {'error': 'keywords parameter is required (comma-separated)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        keyword_list = [k.strip() for k in keywords.split(',')]
+        q_objects = Q()
+        for keyword in keyword_list:
+            if keyword:
+                q_objects |= Q(keywords__icontains=keyword)
+
+        publications = self.get_queryset().filter(q_objects)
+
+        # Lab 필터링
+        lab_id = request.query_params.get('lab')
+        if lab_id:
+            publications = publications.filter(labs=lab_id)
+
+        # 년도 필터링
+        year_from = request.query_params.get('year_from')
+        year_to = request.query_params.get('year_to')
+        if year_from:
+            publications = publications.filter(publication_year__gte=int(year_from))
+        if year_to:
+            publications = publications.filter(publication_year__lte=int(year_to))
+
+        # 기본 통계
+        total_count = publications.count()
+
+        # 연도별 논문 수
+        yearly_counts = publications.values('publication_year').annotate(
+            count=Count('id')
+        ).order_by('publication_year')
+
+        # 연구실별 논문 수
+        lab_counts = publications.values('labs__name').annotate(
+            count=Count('id')
+        ).order_by('-count')[:10]
+
+        # 페이지네이션 적용
+        page = self.paginate_queryset(publications.order_by('-citation_count', '-publication_year'))
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response({
+                'statistics': {
+                    'total_publications': total_count,
+                    'searched_keywords': keyword_list,
+                    'yearly_distribution': list(yearly_counts),
+                    'top_labs': list(lab_counts)
+                },
+                'publications': serializer.data
+            })
+
+        serializer = self.get_serializer(publications, many=True)
+        return Response({
+            'statistics': {
+                'total_publications': total_count,
+                'searched_keywords': keyword_list,
+                'yearly_distribution': list(yearly_counts),
+                'top_labs': list(lab_counts)
+            },
+            'publications': serializer.data
+        })
+
+    @action(detail=False, methods=['post'])
+    def create_with_relations(self, request):
+        """논문과 모든 관련 데이터를 한번에 생성"""
+        from django.db import transaction
+        from apps.labs.models import Lab
+        from apps.professors.models import Professor
+
+        data = request.data
+
+        # 필수 필드 검증
+        required_fields = ['title', 'publication_year']
+        for field in required_fields:
+            if field not in data:
+                return Response(
+                    {'error': f'{field} is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        try:
+            with transaction.atomic():
+                # 1. 논문 기본 정보 생성
+                publication_data = {
+                    'title': data['title'],
+                    'publication_year': data['publication_year'],
+                    'abstract': data.get('abstract', ''),
+                    'doi': data.get('doi', ''),
+                    'arxiv_id': data.get('arxiv_id', ''),
+                    'citation_count': data.get('citation_count', 0),
+                    'keywords': data.get('keywords', []),
+                    'additional_notes': data.get('additional_notes', ''),
+                    'paper_url': data.get('paper_url', ''),
+                    'code_url': data.get('code_url', ''),
+                    'video_url': data.get('video_url', ''),
+                    'dataset_url': data.get('dataset_url', ''),
+                    'slides_url': data.get('slides_url', ''),
+                    'is_open_access': data.get('is_open_access', False),
+                    'language': data.get('language', 'en'),
+                    'page_count': data.get('page_count'),
+                }
+
+                if data.get('publication_date'):
+                    from datetime import datetime
+                    publication_data['publication_date'] = datetime.strptime(
+                        data['publication_date'], '%Y-%m-%d'
+                    ).date()
+
+                publication = Publication.objects.create(**publication_data)
+
+                # 2. 연구실 연결 (lab_id가 제공된 경우)
+                lab_ids = data.get('lab_ids', [])
+                if data.get('lab_id'):  # 단일 lab_id 지원
+                    lab_ids.append(data['lab_id'])
+
+                for lab_id in lab_ids:
+                    try:
+                        lab = Lab.objects.get(id=lab_id)
+                        publication.labs.add(lab)
+                    except Lab.DoesNotExist:
+                        return Response(
+                            {'error': f'Lab with id {lab_id} not found'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                # 3. 저자 정보 처리
+                authors_data = data.get('authors', [])
+                for i, author_data in enumerate(authors_data):
+                    # 기존 저자 찾기 또는 새로 생성
+                    author_name = author_data.get('name')
+                    author_email = author_data.get('email', '')
+
+                    if not author_name:
+                        continue
+
+                    author, created = Author.objects.get_or_create(
+                        name=author_name,
+                        defaults={
+                            'email': author_email,
+                            'current_affiliation': author_data.get('affiliation', ''),
+                            'current_position': author_data.get('position', ''),
+                        }
+                    )
+
+                    # 논문-저자 관계 생성
+                    PublicationAuthor.objects.create(
+                        publication=publication,
+                        author=author,
+                        author_order=author_data.get('order', i + 1),
+                        is_first_author=author_data.get('is_first_author', i == 0),
+                        is_corresponding=author_data.get('is_corresponding', False),
+                        is_last_author=author_data.get('is_last_author', False),
+                        affiliation=author_data.get('affiliation', ''),
+                        affiliation_lab_id=author_data.get('lab_id')
+                    )
+
+                # 4. 학회/저널 정보 처리
+                venues_data = data.get('venues', [])
+                for venue_data in venues_data:
+                    venue_name = venue_data.get('name')
+                    if not venue_name:
+                        continue
+
+                    venue, created = Venue.objects.get_or_create(
+                        name=venue_name,
+                        type=venue_data.get('type', 'conference'),
+                        defaults={
+                            'short_name': venue_data.get('short_name', ''),
+                            'tier': venue_data.get('tier', 'unknown'),
+                            'field': venue_data.get('field', ''),
+                        }
+                    )
+
+                    # 논문-학회 관계 생성
+                    PublicationVenue.objects.create(
+                        publication=publication,
+                        venue=venue,
+                        presentation_type=venue_data.get('presentation_type', 'poster'),
+                        is_best_paper=venue_data.get('is_best_paper', False),
+                        is_best_student_paper=venue_data.get('is_best_student_paper', False),
+                        is_outstanding_paper=venue_data.get('is_outstanding_paper', False),
+                        award_name=venue_data.get('award_name', ''),
+                    )
+
+                # 5. 연구 분야 연결
+                research_areas = data.get('research_areas', [])
+                for area_name in research_areas:
+                    area, created = ResearchArea.objects.get_or_create(
+                        name=area_name,
+                        defaults={'description': f'{area_name} 연구 분야'}
+                    )
+                    PublicationResearchArea.objects.create(
+                        publication=publication,
+                        research_area=area,
+                        relevance_score=1.0
+                    )
+
+                # 6. 응답 데이터 생성
+                serializer = PublicationDetailSerializer(publication)
+                return Response({
+                    'message': 'Publication created successfully with all relations',
+                    'publication': serializer.data
+                }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create publication: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 @method_decorator(cache_page(60 * 60 * 6), name='list')  # Cache list for 6 hours

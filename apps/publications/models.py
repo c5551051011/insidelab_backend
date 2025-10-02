@@ -95,7 +95,7 @@ class Author(models.Model):
 
     # 식별자들
     google_scholar_id = models.CharField(max_length=100, blank=True)
-    orcid = models.CharField(max_length=50, blank=True, unique=True)
+    orcid = models.CharField(max_length=50, blank=True, null=True, unique=True)
     dblp_id = models.CharField(max_length=255, blank=True)
 
     # 소속 정보 (현재)
@@ -133,7 +133,7 @@ class Publication(models.Model):
     abstract = models.TextField(blank=True)
     publication_year = models.PositiveIntegerField()
     publication_date = models.DateField(null=True, blank=True)
-    doi = models.CharField(max_length=255, blank=True, unique=True)
+    doi = models.CharField(max_length=255, blank=True, null=True, unique=True)
     arxiv_id = models.CharField(max_length=50, blank=True)
     google_scholar_id = models.CharField(max_length=100, blank=True)
 
@@ -152,6 +152,18 @@ class Publication(models.Model):
     page_count = models.PositiveIntegerField(null=True, blank=True)
     language = models.CharField(max_length=10, default='en')
     is_open_access = models.BooleanField(default=False)
+
+    # 키워드 및 추가 정보
+    keywords = ArrayField(
+        models.CharField(max_length=100),
+        blank=True,
+        default=list,
+        help_text="논문 키워드 목록"
+    )
+    additional_notes = models.TextField(
+        blank=True,
+        help_text="추가 설명 (예: Best Paper Award, 특별한 성과 등)"
+    )
 
     # 관계
     authors = models.ManyToManyField(Author, through='PublicationAuthor', related_name='publications')

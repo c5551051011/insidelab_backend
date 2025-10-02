@@ -1,0 +1,407 @@
+[
+  {
+    "title": "CoRe: Benchmarking LLMs' Code Reasoning Capabilities through Static Analysis Tasks",
+    "publication_year": 2025,
+    "abstract": "This paper introduces CoRe, a comprehensive benchmark for evaluating Large Language Models' code reasoning capabilities through static analysis tasks.",
+    "publication_date": "2025-11-01",
+    "doi": "",
+    "arxiv_id": "2507.05269",
+    "citation_count": 0,
+    "keywords": ["large language models", "code reasoning", "static analysis", "benchmark", "software engineering"],
+    "additional_notes": "Introduces a novel benchmark for evaluating LLM capabilities in code reasoning tasks.",
+    "paper_url": "https://arxiv.org/pdf/2507.05269",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 80,
+    "authors": [
+      {
+        "name": "Danning Xie",
+        "affiliation": "Purdue University",
+        "position": "PhD Student",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 80
+      },
+      {
+        "name": "Mingwei Zheng",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Xuwei Liu",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Jiannan Wang",
+        "affiliation": "Purdue University",
+        "order": 4,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Chengpeng Wang",
+        "affiliation": "Purdue University",
+        "order": 5,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Lin Tan",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 6,
+        "is_first_author": false,
+        "is_corresponding": true,
+        "lab_id": 80
+      },
+      {
+        "name": "Xiangyu Zhang",
+        "affiliation": "Purdue University",
+        "order": 7,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": false
+      }
+    ],
+    "venues": [
+      {
+        "name": "Advances in Neural Information Processing Systems",
+        "short_name": "NeurIPS",
+        "type": "conference",
+        "tier": "top",
+        "field": "Machine Learning",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Software Engineering",
+      "Large Language Models",
+      "Program Analysis"
+    ]
+  },
+  {
+    "title": "Can Language Models Replace Programmers for Coding? RepoCod Says 'Not Yet'",
+    "publication_year": 2025,
+    "abstract": "RepoCod is a new benchmark evaluating whether language models can replace programmers in real-world coding scenarios.",
+    "publication_date": "2025-07-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["code generation", "language models", "benchmark", "software development", "repository-level coding"],
+    "additional_notes": "Benchmark showing current limitations of LLMs in replacing human programmers.",
+    "paper_url": "https://www.cs.purdue.edu/homes/lintan/publications/repocod-acl25.pdf",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 80,
+    "authors": [
+      {
+        "name": "Shanchao Liang",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 80
+      },
+      {
+        "name": "Yiran Hu",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Nan Jiang",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Lin Tan",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 4,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 80
+      }
+    ],
+    "venues": [
+      {
+        "name": "Annual Meeting of the Association for Computational Linguistics",
+        "short_name": "ACL",
+        "type": "conference",
+        "tier": "top",
+        "field": "Natural Language Processing",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Software Engineering",
+      "Code Generation",
+      "Natural Language Processing"
+    ]
+  },
+  {
+    "title": "ReSym: Harnessing LLMs to Recover Variable and Data Structure Symbols from Stripped Binaries",
+    "publication_year": 2024,
+    "abstract": "ReSym uses Large Language Models to recover variable and data structure symbols from stripped binary executables.",
+    "publication_date": "2024-10-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 2,
+    "keywords": ["binary analysis", "symbol recovery", "large language models", "reverse engineering", "program analysis"],
+    "additional_notes": "Won Distinguished Paper Award at CCS 2024.",
+    "paper_url": "https://www.cs.purdue.edu/homes/lintan/publications/resym-ccs24.pdf",
+    "code_url": "https://github.com/lt-asset/resym",
+    "video_url": "",
+    "dataset_url": "https://github.com/lt-asset/resym",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 80,
+    "authors": [
+      {
+        "name": "Danning Xie",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 80
+      },
+      {
+        "name": "Zhuo Zhang",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Nan Jiang",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Xiangzhe Xu",
+        "affiliation": "Purdue University",
+        "order": 4,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Lin Tan",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 5,
+        "is_first_author": false,
+        "is_corresponding": true,
+        "lab_id": 80
+      },
+      {
+        "name": "Xiangyu Zhang",
+        "affiliation": "Purdue University",
+        "order": 6,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": false
+      }
+    ],
+    "venues": [
+      {
+        "name": "ACM Conference on Computer and Communications Security",
+        "short_name": "CCS",
+        "type": "conference",
+        "tier": "top",
+        "field": "Security",
+        "presentation_type": "oral",
+        "is_best_paper": true,
+        "award_name": "Distinguished Paper Award"
+      }
+    ],
+    "research_areas": [
+      "Binary Analysis",
+      "Program Analysis",
+      "Machine Learning"
+    ]
+  },
+  {
+    "title": "Impact of Code Language Models on Automated Program Repair",
+    "publication_year": 2023,
+    "abstract": "This work investigates how code language models impact the effectiveness and quality of automated program repair.",
+    "publication_date": "2023-05-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 28,
+    "keywords": ["program repair", "code language models", "software maintenance", "deep learning", "bug fixing"],
+    "additional_notes": "Comprehensive study on the impact of pre-trained models on APR.",
+    "paper_url": "https://www.cs.purdue.edu/homes/lintan/publications/clm-icse23.pdf",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 80,
+    "authors": [
+      {
+        "name": "Nan Jiang",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 80
+      },
+      {
+        "name": "Kevin Liu",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Thibaud Lutellier",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Lin Tan",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 4,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 80
+      }
+    ],
+    "venues": [
+      {
+        "name": "International Conference on Software Engineering",
+        "short_name": "ICSE",
+        "type": "conference",
+        "tier": "top",
+        "field": "Software Engineering",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Software Engineering",
+      "Automated Program Repair",
+      "Deep Learning"
+    ]
+  },
+  {
+    "title": "KNOD: Domain Knowledge Distilled Tree Decoder for Automated Program Repair",
+    "publication_year": 2023,
+    "abstract": "KNOD presents a tree decoder approach that distills domain knowledge for improved automated program repair.",
+    "publication_date": "2023-05-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 12,
+    "keywords": ["program repair", "tree decoder", "domain knowledge", "knowledge distillation", "neural networks"],
+    "additional_notes": "Introduces novel tree-based decoder architecture for APR.",
+    "paper_url": "https://www.cs.purdue.edu/homes/lintan/publications/knod-icse23.pdf",
+    "code_url": "https://github.com/lin-tan/knod",
+    "video_url": "",
+    "dataset_url": "https://github.com/lin-tan/knod",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 80,
+    "authors": [
+      {
+        "name": "Nan Jiang",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 80
+      },
+      {
+        "name": "Thibaud Lutellier",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Yiling Lou",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Lin Tan",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 4,
+        "is_first_author": false,
+        "is_corresponding": true,
+        "lab_id": 80
+      },
+      {
+        "name": "Dan Goldwasser",
+        "affiliation": "Purdue University",
+        "order": 5,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Xiangyu Zhang",
+        "affiliation": "Purdue University",
+        "order": 6,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": false
+      }
+    ],
+    "venues": [
+      {
+        "name": "International Conference on Software Engineering",
+        "short_name": "ICSE",
+        "type": "conference",
+        "tier": "top",
+        "field": "Software Engineering",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Software Engineering",
+      "Automated Program Repair",
+      "Machine Learning"
+    ]
+  }
+]

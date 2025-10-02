@@ -1,0 +1,423 @@
+[
+  {
+    "title": "Physics-informed Neural Mapping and Motion Planning in Unknown Environments",
+    "publication_year": 2025,
+    "abstract": "This paper presents a physics-informed neural approach for mapping and motion planning in unknown environments, enabling robots to navigate efficiently without prior knowledge of the space.",
+    "publication_date": "2025-01-01",
+    "doi": "",
+    "arxiv_id": "2410.09883",
+    "citation_count": 0,
+    "keywords": ["motion planning", "neural networks", "physics-informed learning", "robotics", "unknown environments"],
+    "additional_notes": "Novel physics-informed approach for navigation in completely unknown spaces.",
+    "paper_url": "https://arxiv.org/pdf/2410.09883",
+    "code_url": "",
+    "video_url": "https://www.youtube.com/watch?v=qTPL5a6pRKk",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Yuchen Liu",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Ruiqi Ni",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 3,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE Transactions on Robotics",
+        "short_name": "T-RO",
+        "type": "journal",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Motion Planning",
+      "Physics-informed Learning"
+    ]
+  },
+  {
+    "title": "Physics-informed Temporal Difference Metric Learning for Robot Motion Planning",
+    "publication_year": 2025,
+    "abstract": "A physics-informed approach using temporal difference metric learning for improved robot motion planning.",
+    "publication_date": "2025-04-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["motion planning", "temporal difference learning", "metric learning", "physics-informed", "robotics"],
+    "additional_notes": "Accepted at ICLR 2025, one of the top machine learning conferences.",
+    "paper_url": "https://openreview.net/forum?id=TOiageVNru",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Ruiqi Ni",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Zehrong Pan",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 3,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "International Conference on Learning Representations",
+        "short_name": "ICLR",
+        "type": "conference",
+        "tier": "top",
+        "field": "Machine Learning",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Reinforcement Learning",
+      "Motion Planning"
+    ]
+  },
+  {
+    "title": "Integrating Active Sensing and Rearrangement Planning for Efficient Object Retrieval from Unknown, Confined, Cluttered Environments",
+    "publication_year": 2025,
+    "abstract": "This work integrates active sensing with rearrangement planning to enable efficient object retrieval in confined, cluttered spaces.",
+    "publication_date": "2025-05-01",
+    "doi": "",
+    "arxiv_id": "2411.11733",
+    "citation_count": 0,
+    "keywords": ["active sensing", "rearrangement planning", "object retrieval", "cluttered environments", "robotics"],
+    "additional_notes": "Addresses challenging problem of manipulation in tight, cluttered spaces.",
+    "paper_url": "https://arxiv.org/pdf/2411.11733",
+    "code_url": "",
+    "video_url": "https://www.youtube.com/watch?v=tea7I-3RtV0",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Hanwen Ren",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Junyoung Kim",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 3,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE International Conference on Robotics and Automation",
+        "short_name": "ICRA",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Object Manipulation",
+      "Planning"
+    ]
+  },
+  {
+    "title": "Physics-informed Neural Motion Planning on Constraint Manifolds",
+    "publication_year": 2024,
+    "abstract": "Neural motion planning that respects physical constraints using manifold-based representations.",
+    "publication_date": "2024-05-01",
+    "doi": "",
+    "arxiv_id": "2403.05765",
+    "citation_count": 0,
+    "keywords": ["motion planning", "constraint manifolds", "physics-informed", "neural networks", "robotics"],
+    "additional_notes": "Addresses constrained motion planning with neural approaches.",
+    "paper_url": "https://arxiv.org/pdf/2403.05765",
+    "code_url": "",
+    "video_url": "https://youtu.be/qVhi7Pz3zjA?si=FI7h_jUYT2ZJLs38",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Ruiqi Ni",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 2,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE International Conference on Robotics and Automation",
+        "short_name": "ICRA",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Motion Planning",
+      "Constraint Optimization"
+    ]
+  },
+  {
+    "title": "Structural Concept Learning via Graph Attention for Multi-Level Rearrangement Planning",
+    "publication_year": 2023,
+    "abstract": "Learning structural concepts using graph attention networks for multi-level rearrangement planning tasks.",
+    "publication_date": "2023-11-01",
+    "doi": "",
+    "arxiv_id": "2309.02547",
+    "citation_count": 0,
+    "keywords": ["rearrangement planning", "graph attention", "structural learning", "robotics", "manipulation"],
+    "additional_notes": "Published at CoRL, one of the premier robotics learning conferences.",
+    "paper_url": "https://arxiv.org/pdf/2309.02547.pdf",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Manav Kulshrestha",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 2,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "Conference on Robot Learning",
+        "short_name": "CoRL",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Object Rearrangement",
+      "Graph Neural Networks"
+    ]
+  },
+  {
+    "title": "Progressive Learning for Physics-informed Neural Motion Planning",
+    "publication_year": 2023,
+    "abstract": "Progressive learning framework for physics-informed neural networks in motion planning applications.",
+    "publication_date": "2023-07-01",
+    "doi": "",
+    "arxiv_id": "2306.00616",
+    "citation_count": 0,
+    "keywords": ["motion planning", "progressive learning", "physics-informed", "neural networks", "robotics"],
+    "additional_notes": "Published at RSS, a highly selective robotics conference.",
+    "paper_url": "https://arxiv.org/pdf/2306.00616.pdf",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Ruiqi Ni",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 2,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "Robotics: Science and Systems",
+        "short_name": "RSS",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Motion Planning",
+      "Physics-informed Learning"
+    ]
+  },
+  {
+    "title": "NTFields: Neural Time Fields for Physics-Informed Robot Motion Planning",
+    "publication_year": 2023,
+    "abstract": "Neural time fields that incorporate physics constraints for robust robot motion planning.",
+    "publication_date": "2023-04-01",
+    "doi": "",
+    "arxiv_id": "2210.00120",
+    "citation_count": 0,
+    "keywords": ["neural fields", "physics-informed", "motion planning", "time representation", "robotics"],
+    "additional_notes": "ICLR 2023 Spotlight paper (top 25% of accepted papers).",
+    "paper_url": "https://arxiv.org/abs/2210.00120",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 83,
+    "authors": [
+      {
+        "name": "Ruiqi Ni",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 83
+      },
+      {
+        "name": "Ahmed H. Qureshi",
+        "affiliation": "Purdue University",
+        "position": "Assistant Professor",
+        "order": 2,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 83
+      }
+    ],
+    "venues": [
+      {
+        "name": "International Conference on Learning Representations",
+        "short_name": "ICLR",
+        "type": "conference",
+        "tier": "top",
+        "field": "Machine Learning",
+        "presentation_type": "spotlight",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Motion Planning",
+      "Neural Fields"
+    ]
+  }
+]

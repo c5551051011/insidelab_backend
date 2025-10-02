@@ -58,6 +58,19 @@ class PublicationFilter(django_filters.FilterSet):
     # 고인용 논문 필터
     highly_cited = django_filters.BooleanFilter(method='filter_highly_cited')
 
+    # 키워드 필터
+    keyword = django_filters.CharFilter(method='filter_by_keyword')
+    keywords_contain = django_filters.CharFilter(method='filter_keywords_contain')
+
+    # 년도 구간 필터 (편의성 향상)
+    year_range = django_filters.CharFilter(method='filter_year_range')
+
+    # 특정 년도들 필터
+    years = django_filters.CharFilter(method='filter_specific_years')
+
+    # 추가 노트가 있는 논문 (수상 등)
+    has_notes = django_filters.BooleanFilter(method='filter_has_notes')
+
     class Meta:
         model = Publication
         fields = [
@@ -96,6 +109,56 @@ class PublicationFilter(django_filters.FilterSet):
             from django.db.models import Q
             # 간단히 인용수 50 이상으로 설정
             return queryset.filter(citation_count__gte=50)
+        return queryset
+
+    def filter_by_keyword(self, queryset, name, value):
+        """특정 키워드로 필터링"""
+        if value:
+            return queryset.filter(keywords__icontains=value)
+        return queryset
+
+    def filter_keywords_contain(self, queryset, name, value):
+        """키워드 배열에서 특정 문자열 포함 검색"""
+        if value:
+            keywords = [k.strip() for k in value.split(',')]
+            q_objects = Q()
+            for keyword in keywords:
+                if keyword:
+                    q_objects |= Q(keywords__icontains=keyword)
+            return queryset.filter(q_objects)
+        return queryset
+
+    def filter_year_range(self, queryset, name, value):
+        """년도 범위 필터 (예: '2020-2023')"""
+        if value and '-' in value:
+            try:
+                start_year, end_year = value.split('-')
+                start_year = int(start_year.strip())
+                end_year = int(end_year.strip())
+                return queryset.filter(
+                    publication_year__gte=start_year,
+                    publication_year__lte=end_year
+                )
+            except (ValueError, AttributeError):
+                pass
+        return queryset
+
+    def filter_specific_years(self, queryset, name, value):
+        """특정 년도들로 필터링 (예: '2020,2021,2023')"""
+        if value:
+            try:
+                years = [int(year.strip()) for year in value.split(',')]
+                return queryset.filter(publication_year__in=years)
+            except (ValueError, AttributeError):
+                pass
+        return queryset
+
+    def filter_has_notes(self, queryset, name, value):
+        """추가 노트가 있는 논문 필터링"""
+        if value:
+            return queryset.exclude(additional_notes='')
+        elif value is False:
+            return queryset.filter(additional_notes='')
         return queryset
 
 

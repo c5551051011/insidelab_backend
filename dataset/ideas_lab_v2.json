@@ -1,0 +1,570 @@
+[
+  {
+    "title": "Adaptive Planning with Generative Models under Uncertainty",
+    "publication_year": 2024,
+    "abstract": "This work addresses adaptive planning in robotics using generative models to handle uncertainty in dynamic environments.",
+    "publication_date": "2024-10-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["adaptive planning", "generative models", "uncertainty", "robotics", "motion planning"],
+    "additional_notes": "Accepted at IROS 2024, focusing on planning under uncertainty.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Pascal Jutras",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      },
+      {
+        "name": "Ruqi Zhang",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Aniket Bera",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 3,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems",
+        "short_name": "IROS",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Motion Planning",
+      "Generative Models"
+    ]
+  },
+  {
+    "title": "TrustNavGPT: Modeling Uncertainty to Improve Trustworthiness of Audio-Guided LLM-Based Robot Navigation",
+    "publication_year": 2024,
+    "abstract": "A novel approach to improve trustworthiness in LLM-based robot navigation systems using audio guidance and uncertainty modeling.",
+    "publication_date": "2024-10-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["robot navigation", "large language models", "trustworthiness", "audio processing", "uncertainty modeling"],
+    "additional_notes": "Innovative integration of LLMs with robot navigation using audio cues.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Xingpeng Sun",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      },
+      {
+        "name": "Yiran Zhang",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Xindi Tang",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Amrit Singh Bedi",
+        "affiliation": "Purdue University",
+        "order": 4,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Aniket Bera",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 5,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems",
+        "short_name": "IROS",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Natural Language Processing",
+      "Human-Robot Interaction"
+    ]
+  },
+  {
+    "title": "Optimizing Crowd-Aware Multi-Agent Path Finding through Local Communication with Graph Neural Networks",
+    "publication_year": 2024,
+    "abstract": "An optimization method for multi-agent path finding in crowded environments using graph neural networks and local communication.",
+    "publication_date": "2024-10-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["multi-agent systems", "path finding", "graph neural networks", "crowd simulation", "local communication"],
+    "additional_notes": "Addresses scalable multi-agent coordination in crowded spaces.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Phu Pham",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      },
+      {
+        "name": "Aniket Bera",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 2,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems",
+        "short_name": "IROS",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Multi-Agent Systems",
+      "Graph Neural Networks"
+    ]
+  },
+  {
+    "title": "DL3DV-10K: A Large-Scale Scene Dataset for Deep Learning-based 3D Vision",
+    "publication_year": 2024,
+    "abstract": "A large-scale dataset containing 10,000+ scenes for advancing deep learning research in 3D vision tasks. Created in collaboration with Adobe Research and Google.",
+    "publication_date": "2024-06-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["3d vision", "dataset", "deep learning", "scene understanding", "benchmark"],
+    "additional_notes": "Large-scale collaboration with Adobe Research and Google. Major dataset contribution to the field.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Multiple Authors",
+        "affiliation": "Purdue University, Adobe Research, Google",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+        "short_name": "CVPR",
+        "type": "conference",
+        "tier": "top",
+        "field": "Computer Vision",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Computer Vision",
+      "3D Vision",
+      "Datasets"
+    ]
+  },
+  {
+    "title": "Speech2UnifiedExpressions: Synchronous Synthesis of Co-Speech Affective Face and Body Expressions from Affordable Inputs",
+    "publication_year": 2024,
+    "abstract": "Synchronized generation of facial and body expressions from speech input for creating expressive virtual characters. Collaboration with Adobe Research.",
+    "publication_date": "2024-06-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["speech processing", "affective computing", "facial animation", "body animation", "virtual agents"],
+    "additional_notes": "Industry collaboration with Adobe Research on virtual character animation.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Multiple Authors",
+        "affiliation": "Purdue University, Adobe Research",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE/CVF Conference on Computer Vision and Pattern Recognition",
+        "short_name": "CVPR",
+        "type": "conference",
+        "tier": "top",
+        "field": "Computer Vision",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Computer Vision",
+      "Affective Computing",
+      "Animation"
+    ]
+  },
+  {
+    "title": "DanceAnyWay: Synthesizing Beat-Guided 3D Dances With Randomized Temporal Contrastive Learning",
+    "publication_year": 2024,
+    "abstract": "A method for synthesizing 3D dance animations guided by music beats using temporal contrastive learning.",
+    "publication_date": "2024-02-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["dance generation", "3d animation", "contrastive learning", "music-driven animation", "temporal modeling"],
+    "additional_notes": "Novel approach to music-driven 3D dance generation.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Aneesh Bhattacharya",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      },
+      {
+        "name": "Manas Paranjape",
+        "affiliation": "Purdue University",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Uttaran Bhattacharya",
+        "affiliation": "Purdue University",
+        "order": 3,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Aniket Bera",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 4,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "AAAI Conference on Artificial Intelligence",
+        "short_name": "AAAI",
+        "type": "conference",
+        "tier": "top",
+        "field": "Artificial Intelligence",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Computer Graphics",
+      "Animation",
+      "Machine Learning"
+    ]
+  },
+  {
+    "title": "SG-LSTM: Social Group LSTM for Robot Navigation Through Dense Crowds",
+    "publication_year": 2023,
+    "abstract": "An LSTM-based approach for robot navigation that models social group dynamics in dense crowded environments.",
+    "publication_date": "2023-05-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["robot navigation", "lstm", "crowd simulation", "social robotics", "human-robot interaction"],
+    "additional_notes": "Models social group behavior for improved robot navigation in crowds.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Multiple Authors",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE International Conference on Robotics and Automation",
+        "short_name": "ICRA",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Social Navigation",
+      "Deep Learning"
+    ]
+  },
+  {
+    "title": "DroNeRF: Real-time Multi-agent Drone Pose Optimization for Computing Neural Radiance Fields",
+    "publication_year": 2023,
+    "abstract": "Real-time pose optimization for multiple drones to efficiently compute neural radiance fields of scenes.",
+    "publication_date": "2023-05-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["neural radiance fields", "drones", "multi-agent systems", "pose optimization", "3d reconstruction"],
+    "additional_notes": "Real-time NeRF computation with coordinated multi-drone systems.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Multiple Authors",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE International Conference on Robotics and Automation",
+        "short_name": "ICRA",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "poster",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Computer Vision",
+      "Neural Rendering"
+    ]
+  },
+  {
+    "title": "EWareNet: Emotion Aware Human Intent Prediction and Adaptive Spatial Profile Fusion for Social Robot Navigation",
+    "publication_year": 2023,
+    "abstract": "An emotion-aware system for predicting human intent to enable socially-aware robot navigation.",
+    "publication_date": "2023-05-01",
+    "doi": "",
+    "arxiv_id": "",
+    "citation_count": 0,
+    "keywords": ["emotion recognition", "intent prediction", "social robotics", "robot navigation", "affective computing"],
+    "additional_notes": "Integrates emotion recognition with robot navigation for better human-robot interaction.",
+    "paper_url": "",
+    "code_url": "",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": false,
+    "language": "en",
+    "page_count": 0,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Multiple Authors",
+        "affiliation": "Purdue University",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "IEEE International Conference on Robotics and Automation",
+        "short_name": "ICRA",
+        "type": "conference",
+        "tier": "top",
+        "field": "Robotics",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Robotics",
+      "Affective Computing",
+      "Human-Robot Interaction"
+    ]
+  },
+  {
+    "title": "Learning Unseen Emotions from Gestures via Semantically-Conditioned Zero-Shot Perception with Adversarial Autoencoders",
+    "publication_year": 2022,
+    "abstract": "A novel generalized zero-shot algorithm to recognize perceived emotions from gestures using adversarial autoencoders and semantic embeddings.",
+    "publication_date": "2022-06-28",
+    "doi": "10.1609/aaai.v36i1.19873",
+    "arxiv_id": "2009.08906",
+    "citation_count": 15,
+    "keywords": ["emotion recognition", "zero-shot learning", "adversarial autoencoders", "gesture recognition", "affective computing"],
+    "additional_notes": "Published at AAAI 2022. Novel approach to zero-shot emotion recognition from body gestures.",
+    "paper_url": "https://arxiv.org/pdf/2009.08906",
+    "code_url": "https://github.com/savnani5/Zero-Shot-Emotion-Recognition-with-AAE",
+    "video_url": "",
+    "dataset_url": "",
+    "slides_url": "",
+    "is_open_access": true,
+    "language": "en",
+    "page_count": 8,
+    "lab_id": 84,
+    "authors": [
+      {
+        "name": "Abhishek Banerjee",
+        "affiliation": "University of Maryland",
+        "order": 1,
+        "is_first_author": true,
+        "is_corresponding": false
+      },
+      {
+        "name": "Uttaran Bhattacharya",
+        "affiliation": "University of Maryland",
+        "order": 2,
+        "is_first_author": false,
+        "is_corresponding": false
+      },
+      {
+        "name": "Aniket Bera",
+        "affiliation": "Purdue University",
+        "position": "Associate Professor",
+        "order": 3,
+        "is_first_author": false,
+        "is_last_author": true,
+        "is_corresponding": true,
+        "lab_id": 84
+      }
+    ],
+    "venues": [
+      {
+        "name": "AAAI Conference on Artificial Intelligence",
+        "short_name": "AAAI",
+        "type": "conference",
+        "tier": "top",
+        "field": "Artificial Intelligence",
+        "presentation_type": "oral",
+        "is_best_paper": false,
+        "award_name": ""
+      }
+    ],
+    "research_areas": [
+      "Affective Computing",
+      "Computer Vision",
+      "Machine Learning"
+    ]
+  }
+]
