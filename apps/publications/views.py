@@ -2,7 +2,7 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -25,13 +25,13 @@ from .filters import PublicationFilter, AuthorFilter, VenueFilter
 from apps.utils.cache import cache_response
 
 
-@method_decorator(cache_page(60 * 60), name='list')  # Cache list for 1 hour
-@method_decorator(cache_page(60 * 60 * 2), name='retrieve')  # Cache detail for 2 hours
+# # @method_decorator(cache_page(60 * 60), name='list')  # Cache list for 1 hour
+# @method_decorator(cache_page(60 * 60 * 2), name='retrieve')  # Cache detail for 2 hours
 class PublicationViewSet(viewsets.ModelViewSet):
     """논문 관리 ViewSet"""
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    # filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    # filterset_class = PublicationFilter  # Temporarily disabled
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = PublicationFilter
     search_fields = ['title', 'abstract', 'authors__name', 'venues__name', 'keywords', 'additional_notes']
     ordering_fields = [
         'publication_year', 'citation_count', 'h_index_contribution',
@@ -510,13 +510,13 @@ class PublicationViewSet(viewsets.ModelViewSet):
             )
 
 
-@method_decorator(cache_page(60 * 60 * 6), name='list')  # Cache list for 6 hours
-@method_decorator(cache_page(60 * 60 * 12), name='retrieve')  # Cache detail for 12 hours
+# @method_decorator(cache_page(60 * 60 * 6), name='list')  # Cache list for 6 hours
+# @method_decorator(cache_page(60 * 60 * 12), name='retrieve')  # Cache detail for 12 hours
 class AuthorViewSet(viewsets.ModelViewSet):
     """저자 관리 ViewSet"""
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = AuthorFilter
     search_fields = ['name', 'current_affiliation', 'bio']
@@ -583,13 +583,13 @@ class AuthorViewSet(viewsets.ModelViewSet):
         return Response(collaborator_data)
 
 
-@method_decorator(cache_page(60 * 60 * 12), name='list')  # Cache list for 12 hours
-@method_decorator(cache_page(60 * 60 * 24), name='retrieve')  # Cache detail for 24 hours
+# @method_decorator(cache_page(60 * 60 * 12), name='list')  # Cache list for 12 hours
+# @method_decorator(cache_page(60 * 60 * 24), name='retrieve')  # Cache detail for 24 hours
 class VenueViewSet(viewsets.ModelViewSet):
     """학회/저널 관리 ViewSet"""
     queryset = Venue.objects.all()
     serializer_class = VenueSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = VenueFilter
     search_fields = ['name', 'short_name', 'field', 'subfield']
@@ -630,13 +630,13 @@ class VenueViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-@method_decorator(cache_page(60 * 60 * 12), name='list')  # Cache list for 12 hours
-@method_decorator(cache_page(60 * 60 * 24), name='retrieve')  # Cache detail for 24 hours
+# @method_decorator(cache_page(60 * 60 * 12), name='list')  # Cache list for 12 hours
+# @method_decorator(cache_page(60 * 60 * 24), name='retrieve')  # Cache detail for 24 hours
 class ResearchAreaViewSet(viewsets.ModelViewSet):
     """연구 분야 관리 ViewSet"""
     queryset = ResearchArea.objects.all()
     serializer_class = ResearchAreaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
@@ -678,12 +678,12 @@ class ResearchAreaViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-@method_decorator(cache_page(60 * 60), name='list')  # Cache list for 1 hour
+# @method_decorator(cache_page(60 * 60), name='list')  # Cache list for 1 hour
 class LabPublicationStatsViewSet(viewsets.ReadOnlyModelViewSet):
     """연구실 논문 통계 ViewSet"""
     queryset = LabPublicationStats.objects.select_related('lab', 'most_cited_paper')
     serializer_class = LabPublicationStatsSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['lab']
     ordering_fields = [
@@ -714,12 +714,12 @@ class LabPublicationStatsViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
 
-@method_decorator(cache_page(60 * 30), name='list')  # Cache list for 30 minutes
+# @method_decorator(cache_page(60 * 30), name='list')  # Cache list for 30 minutes
 class CollaborationViewSet(viewsets.ReadOnlyModelViewSet):
     """공동연구 관계 ViewSet"""
     queryset = Collaboration.objects.select_related('lab')
     serializer_class = CollaborationSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['lab', 'collaborator_type']
     ordering_fields = ['collaboration_count', 'last_collaboration_year']
