@@ -10,6 +10,17 @@ class UniversitySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DepartmentSerializer(serializers.ModelSerializer):
+    university_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'description', 'common_names', 'university_count', 'created_at']
+
+    def get_university_count(self, obj):
+        return obj.university_departments.filter(is_active=True).count()
+
+
 class UniversityDepartmentSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source='department.name', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
@@ -20,6 +31,9 @@ class UniversityDepartmentSerializer(serializers.ModelSerializer):
                  'local_name', 'display_name', 'website', 'head_name', 'established_year',
                  'is_active', 'created_at']
         read_only_fields = ['display_name']
+        extra_kwargs = {
+            'university': {'required': False}
+        }
 
 
 class ResearchGroupSerializer(serializers.ModelSerializer):
