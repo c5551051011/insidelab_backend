@@ -128,8 +128,6 @@ class UniversityViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-@method_decorator(cache_page(60 * 60 * 2), name='list')  # Cache list for 2 hours
-@method_decorator(cache_page(60 * 60), name='retrieve')  # Cache detail for 1 hour
 class ResearchGroupViewSet(viewsets.ModelViewSet):
     queryset = ResearchGroup.objects.select_related(
         'university_department__university',
@@ -137,7 +135,7 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
         'head_professor'
     ).prefetch_related('professors', 'labs')
     serializer_class = ResearchGroupSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['university_department__university', 'university_department__department', 'university_department']
     search_fields = ['name', 'description', 'research_areas']
