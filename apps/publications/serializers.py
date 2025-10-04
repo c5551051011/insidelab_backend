@@ -108,6 +108,7 @@ class PublicationVenueSerializer(serializers.ModelSerializer):
 
 class PublicationListSerializer(serializers.ModelSerializer):
     """논문 목록용 간단한 시리얼라이저"""
+    authors = serializers.SerializerMethodField()
     first_author_name = serializers.SerializerMethodField()
     primary_venue_name = serializers.SerializerMethodField()
     primary_venue_tier = serializers.SerializerMethodField()
@@ -117,24 +118,77 @@ class PublicationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publication
         fields = [
-            'id', 'title', 'publication_year', 'citation_count',
-            'first_author_name', 'primary_venue_name', 'primary_venue_tier',
-            'author_count', 'research_area_names',
-            'keywords', 'additional_notes',
-            'paper_url', 'is_open_access', 'created_at'
+            'id', 'title', 'abstract', 'publication_year', 'publication_date',
+            'doi', 'arxiv_id', 'google_scholar_id', 'citation_count',
+            'authors', 'first_author_name', 'author_count',
+            'primary_venue_name', 'primary_venue_tier',
+            'research_area_names', 'keywords', 'additional_notes',
+            'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
+            'page_count', 'language', 'is_open_access',
+            'h_index_contribution', 'created_at', 'updated_at'
+        ]
+
+    def to_representation(self, instance):
+        """Always include all fields, even when empty"""
+        data = super().to_representation(instance)
+
+        # Ensure empty fields are included as empty strings instead of null
+        string_fields = ['abstract', 'doi', 'arxiv_id', 'google_scholar_id',
+                        'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
+                        'language', 'additional_notes']
+
+        for field in string_fields:
+            if data.get(field) is None:
+                data[field] = ""
+
+        # Ensure arrays are empty lists instead of null
+        array_fields = ['keywords', 'research_area_names']
+        for field in array_fields:
+            if data.get(field) is None:
+                data[field] = []
+
+        # Ensure numeric fields have default values
+        if data.get('page_count') is None:
+            data['page_count'] = 0
+        if data.get('h_index_contribution') is None:
+            data['h_index_contribution'] = 0.0
+
+        return data
+
+    def get_authors(self, obj):
+        """Get complete author information ordered by author_order"""
+        authors_qs = obj.publicationauthor_set.select_related('author', 'affiliation_lab').order_by('author_order')
+        return [
+            {
+                'id': pa.author.id,
+                'name': pa.author.name,
+                'email': pa.author.email or "",
+                'order': pa.author_order,
+                'is_corresponding': pa.is_corresponding,
+                'is_first_author': pa.is_first_author,
+                'is_last_author': pa.is_last_author,
+                'affiliation': pa.affiliation or "",
+                'affiliation_lab_id': pa.affiliation_lab.id if pa.affiliation_lab else None,
+                'affiliation_lab_name': pa.affiliation_lab.name if pa.affiliation_lab else "",
+                'google_scholar_id': pa.author.google_scholar_id or "",
+                'orcid': pa.author.orcid or "",
+                'current_affiliation': pa.author.current_affiliation or "",
+                'current_position': pa.author.current_position or ""
+            }
+            for pa in authors_qs
         ]
 
     def get_first_author_name(self, obj):
         first_author = obj.first_author
-        return first_author.name if first_author else None
+        return first_author.name if first_author else ""
 
     def get_primary_venue_name(self, obj):
         venue = obj.primary_venue
-        return venue.display_name if venue else None
+        return venue.display_name if venue else ""
 
     def get_primary_venue_tier(self, obj):
         venue = obj.primary_venue
-        return venue.tier if venue else None
+        return venue.tier if venue else ""
 
     def get_author_count(self, obj):
         return obj.authors.count()
