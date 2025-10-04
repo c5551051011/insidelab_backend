@@ -156,27 +156,9 @@ class PublicationListSerializer(serializers.ModelSerializer):
         return data
 
     def get_authors(self, obj):
-        """Get complete author information ordered by author_order"""
-        authors_qs = obj.publicationauthor_set.select_related('author', 'affiliation_lab').order_by('author_order')
-        return [
-            {
-                'id': pa.author.id,
-                'name': pa.author.name,
-                'email': pa.author.email or "",
-                'order': pa.author_order,
-                'is_corresponding': pa.is_corresponding,
-                'is_first_author': pa.is_first_author,
-                'is_last_author': pa.is_last_author,
-                'affiliation': pa.affiliation or "",
-                'affiliation_lab_id': pa.affiliation_lab.id if pa.affiliation_lab else None,
-                'affiliation_lab_name': pa.affiliation_lab.name if pa.affiliation_lab else "",
-                'google_scholar_id': pa.author.google_scholar_id or "",
-                'orcid': pa.author.orcid or "",
-                'current_affiliation': pa.author.current_affiliation or "",
-                'current_position': pa.author.current_position or ""
-            }
-            for pa in authors_qs
-        ]
+        """Get author names as simple list ordered by author_order"""
+        authors_qs = obj.publicationauthor_set.select_related('author').order_by('author_order')
+        return [pa.author.name for pa in authors_qs]
 
     def get_first_author_name(self, obj):
         first_author = obj.first_author
