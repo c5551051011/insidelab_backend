@@ -32,9 +32,11 @@ class PublicationFilter(django_filters.FilterSet):
 
     # 연구실 필터
     lab = django_filters.NumberFilter(field_name='labs')
+    lab_id = django_filters.NumberFilter(field_name='labs')  # lab_id로도 검색 가능
 
-    # 연구 분야 필터
-    research_area = django_filters.NumberFilter(field_name='research_areas')
+    # 연구 분야 필터 (이름으로 검색)
+    research_area = django_filters.CharFilter(method='filter_by_research_area')
+    research_area_id = django_filters.NumberFilter(field_name='research_areas')  # ID로 검색할 때 사용
 
     # 오픈 액세스 필터
     open_access = django_filters.BooleanFilter(field_name='is_open_access')
@@ -148,6 +150,12 @@ class PublicationFilter(django_filters.FilterSet):
             return queryset.exclude(additional_notes='')
         elif value is False:
             return queryset.filter(additional_notes='')
+        return queryset
+
+    def filter_by_research_area(self, queryset, name, value):
+        """연구 분야 이름으로 필터링"""
+        if value:
+            return queryset.filter(research_areas__name__icontains=value)
         return queryset
 
 
