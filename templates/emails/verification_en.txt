@@ -1,0 +1,27 @@
+🔬 InsideLab - Email Verification
+
+Hello, {{ user_name }}!
+
+Thank you for joining InsideLab!
+To secure your account, please verify your email address by clicking the link below:
+
+{{ verification_url }}
+
+Visit Website: https://c5551051011.github.io/insidelab_frontend/
+
+Features Available After Verification:
+✓ Write and read lab reviews
+✓ View detailed professor ratings
+✓ Get personalized lab recommendations
+✓ Earn incentives for writing reviews
+✓ Anonymous review posting
+
+🔒 Security Notice: This verification link will expire in 24 hours.
+If you didn't sign up for InsideLab, please ignore this email.
+
+---
+InsideLab Team
+Empowering better lab choices for graduate students
+
+Support: insidelab25@gmail.com
+Unsubscribe: {{ unsubscribe_url }}

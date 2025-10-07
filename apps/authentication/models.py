@@ -76,7 +76,18 @@ class User(AbstractUser):
     # User activity stats
     review_count = models.IntegerField(default=0)
     helpful_votes = models.IntegerField(default=0)
-    
+
+    # Language preference
+    language = models.CharField(
+        max_length=10,
+        choices=[
+            ('ko', 'Korean'),
+            ('en', 'English'),
+        ],
+        default='ko',
+        help_text='User preferred language for emails and interface'
+    )
+
     joined_date = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

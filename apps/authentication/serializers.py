@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
                  'university_department', 'university_department_name', 'department_name',
                  'position', 'department', 'lab_name', 'is_verified', 'verification_status',
                  'is_lab_member', 'can_provide_services', 'review_count', 'helpful_votes',
-                 'joined_date', 'created_at')
+                 'language', 'joined_date', 'created_at')
         read_only_fields = ('is_verified', 'verification_status', 'joined_date', 'created_at',
                            'review_count', 'helpful_votes', 'university_name', 'university_department_name',
                            'department_name')
@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password', 'password_confirm',
-                 'name', 'position', 'university_department', 'department')
+                 'name', 'position', 'university_department', 'department', 'language')
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:

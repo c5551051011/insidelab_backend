@@ -1,0 +1,17 @@
+🔬 InsideLab - User Feedback Received
+
+New Feedback from User
+
+User Information:
+- Email: {{ user_email }}
+- Name: {{ user_name }}
+- Type: {{ user_type }}
+- Subject: {{ feedback_subject }}
+- Timestamp: {{ timestamp }}
+
+Message:
+{{ feedback_message }}
+
+---
+InsideLab Internal
+This is an automated feedback notification.

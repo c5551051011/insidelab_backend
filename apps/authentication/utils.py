@@ -63,12 +63,47 @@ def send_verification_email(user, request=None):
             'domain': domain,
         }
 
-        # Render templates
-        html_content = render_to_string('emails/verification.html', context)
-        text_content = render_to_string('emails/verification.txt', context)
+        # Determine language and templates
+        language = getattr(user, 'language', 'ko')  # Default to Korean for backward compatibility
 
-        # Email subject
-        subject = '🔬 InsideLab 이메일 인증을 완료해 주세요'
+        # Auto-detect language from email domain if not set
+        if language == 'ko' and user.email:
+            # Check if email domain suggests English (common international domains)
+            email_domain = user.email.split('@')[1].lower()
+            international_domains = [
+                'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com',
+                'edu', '.edu', 'university', 'college', 'ac.uk', 'ox.ac.uk',
+                'cam.ac.uk', 'mit.edu', 'stanford.edu', 'harvard.edu'
+            ]
+
+            if any(domain in email_domain for domain in international_domains):
+                # Check for Korean domains to stay Korean
+                korean_domains = [
+                    '.ac.kr', '.edu.kr', 'kaist.ac.kr', 'snu.ac.kr',
+                    'yonsei.ac.kr', 'korea.ac.kr', 'postech.ac.kr'
+                ]
+                if not any(kr_domain in email_domain for kr_domain in korean_domains):
+                    language = 'en'
+
+        # Select templates based on language
+        html_template = f'emails/verification_{language}.html'
+        text_template = f'emails/verification_{language}.txt'
+
+        # Fallback to Korean if English templates don't exist
+        try:
+            html_content = render_to_string(html_template, context)
+            text_content = render_to_string(text_template, context)
+        except Exception:
+            # Fallback to Korean templates
+            html_content = render_to_string('emails/verification_ko.html', context)
+            text_content = render_to_string('emails/verification_ko.txt', context)
+            language = 'ko'
+
+        # Email subject based on language
+        if language == 'en':
+            subject = '🔬 InsideLab - Please Verify Your Email Address'
+        else:
+            subject = '🔬 InsideLab 이메일 인증을 완료해 주세요'
 
         # Create email
         email = EmailMultiAlternatives(
@@ -84,7 +119,7 @@ def send_verification_email(user, request=None):
         # Send email to user
         email.send()
 
-        logger.info(f"Verification email sent successfully to {user.email}")
+        logger.info(f"Verification email sent successfully to {user.email} in {language}")
         return True
 
     except Exception as e:

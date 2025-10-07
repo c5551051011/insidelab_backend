@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InsideLab Feedback</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .email-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 20px;
+            color: #333;
+            margin: 0;
+        }
+
+        .feedback-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            min-width: 120px;
+        }
+
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+
+        .feedback-content {
+            background-color: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .subject {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .message {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .action-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .email-container {
+                padding: 20px;
+            }
+
+            .info-row {
+                flex-direction: column;
+            }
+
+            .info-label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">🔬 InsideLab</div>
+            <h1 class="title">새로운 피드백이 도착했습니다</h1>
+        </div>
+
+        <div class="feedback-info">
+            <div class="info-row">
+                <span class="info-label">보낸 사람:</span>
+                <span class="info-value">{{ user_name }} ({{ user_email }})</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">사용자 타입:</span>
+                <span class="info-value">{{ user_type|capfirst }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">전송 시간:</span>
+                <span class="info-value">{{ timestamp }}</span>
+            </div>
+        </div>
+
+        <div class="feedback-content">
+            <div class="subject">{{ feedback_subject }}</div>
+            <div class="message">{{ feedback_message }}</div>
+        </div>
+
+        <div class="action-note">
+            <strong>📧 답변 방법:</strong> 이 이메일에 직접 답장하면 사용자에게 전달됩니다.
+        </div>
+
+        <div class="footer">
+            <p>이 메시지는 InsideLab 피드백 시스템에서 자동으로 발송되었습니다.</p>
+            <p>사용자 지원 및 서비스 개선을 위해 신속한 응답을 부탁드립니다.</p>
+        </div>
+    </div>
+</body>
+</html>

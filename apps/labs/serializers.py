@@ -23,27 +23,38 @@ class RecruitmentStatusSerializer(serializers.ModelSerializer):
                  'is_recruiting_intern', 'notes', 'last_updated']
 
 
+class LabMinimalSerializer(serializers.ModelSerializer):
+    """Minimal fields for write review dropdown"""
+    professor_name = serializers.CharField(source='professor.name', read_only=True)
+
+    class Meta:
+        model = Lab
+        fields = ['id', 'name', 'professor_name']
+
+
 class LabListSerializer(serializers.ModelSerializer):
+    """Full fields for lab search/cards"""
     professor_name = serializers.CharField(source='professor.name', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
     research_group_name = serializers.CharField(source='research_group.name', read_only=True)
     recruitment_status = RecruitmentStatusSerializer(read_only=True)
-    university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
-    department_name = serializers.CharField(source='university_department.department.name', read_only=True)
-    department_local_name = serializers.CharField(source='university_department.local_name', read_only=True)
+
+    # Use the most appropriate department field - prefer local_name if available
+    department = serializers.SerializerMethodField()
 
     class Meta:
         model = Lab
-        fields = ['id', 'name', 'professor', 'professor_name', 'university', 'university_name',
-                 'department', 'research_group', 'research_group_name', 'description', 'website',
-                 'lab_size', 'overall_rating', 'review_count', 'research_areas', 'tags', 'recruitment_status',
-                 'university_department', 'university_department_name', 'department_name', 'department_local_name']
-        extra_kwargs = {
-            'professor': {'write_only': True},
-            'university': {'write_only': True},
-            'research_group': {'write_only': True},
-            'university_department': {'write_only': True}
-        }
+        fields = ['id', 'name', 'professor_name', 'university_name', 'department',
+                 'research_group_name', 'overall_rating', 'review_count',
+                 'research_areas', 'tags', 'recruitment_status']
+
+    def get_department(self, obj):
+        """Return the best available department name"""
+        if obj.university_department:
+            # Prefer local_name if available, otherwise use department name
+            return obj.university_department.local_name or obj.university_department.department.name
+        # Fallback to legacy department field
+        return obj.department or ''
 
 
 class LabDetailSerializer(serializers.ModelSerializer):

@@ -12,7 +12,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import Lab, ResearchTopic, Publication, RecruitmentStatus
 from .serializers import (
-    LabListSerializer, LabDetailSerializer,
+    LabMinimalSerializer, LabListSerializer, LabDetailSerializer,
     ResearchTopicSerializer, PublicationSerializer,
     RecruitmentStatusSerializer
 )
@@ -30,21 +30,45 @@ class LabViewSet(viewsets.ModelViewSet):
     ordering = ['-overall_rating', '-review_count']
     
     def get_queryset(self):
-        queryset = Lab.objects.select_related('professor', 'university')
-        
-        # Add prefetch for detail view
-        if self.action == 'retrieve':
-            queryset = queryset.prefetch_related(
+        # Check for fields parameter to optimize queries
+        fields = self.request.query_params.get('fields', 'full')
+
+        if fields == 'minimal':
+            # For minimal fields, only need professor name
+            queryset = Lab.objects.select_related('professor')
+        elif self.action == 'retrieve':
+            # For detail view, prefetch all related data
+            queryset = Lab.objects.select_related(
+                'professor',
+                'university',
+                'university_department__university',
+                'university_department__department',
+                'research_group'
+            ).prefetch_related(
                 'research_topics',
                 'recent_publications',
                 'recruitment_status'
             )
-        
+        else:
+            # For full list view, select related fields needed for list serializer
+            queryset = Lab.objects.select_related(
+                'professor',
+                'university',
+                'university_department__university',
+                'university_department__department',
+                'research_group'
+            ).prefetch_related('recruitment_status')
+
         return queryset
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return LabDetailSerializer
+
+        # Check for fields parameter to determine serializer
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            return LabMinimalSerializer
         return LabListSerializer
     
     @cache_response('LABS', timeout=60*60)  # Cache for 1 hour
