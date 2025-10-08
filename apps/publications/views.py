@@ -152,6 +152,57 @@ class PublicationViewSet(viewsets.ModelViewSet):
             'top_publications': top_papers_data
         })
 
+    @action(detail=False, methods=['get'])
+    def yearly_stats(self, request):
+        """특정 랩의 연도별 논문 개수 통계"""
+        lab_id = request.query_params.get('lab_id')
+        if not lab_id:
+            return Response(
+                {'error': 'lab_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 연도 범위 설정 (기본: 최근 10년)
+        current_year = datetime.now().year
+        start_year = int(request.query_params.get('start_year', current_year - 9))
+        end_year = int(request.query_params.get('end_year', current_year))
+
+        # 해당 랩의 논문들 필터링
+        publications = self.get_queryset().filter(
+            labs=lab_id,
+            publication_year__gte=start_year,
+            publication_year__lte=end_year
+        )
+
+        # 연도별 논문 개수 집계
+        yearly_counts = publications.values('publication_year').annotate(
+            count=Count('id')
+        ).order_by('publication_year')
+
+        # 결과를 딕셔너리 형태로 변환
+        yearly_stats = {}
+        for item in yearly_counts:
+            year = str(item['publication_year'])
+            yearly_stats[year] = item['count']
+
+        # 빈 연도들도 0으로 채우기 (선택적)
+        fill_empty_years = request.query_params.get('fill_empty', 'true').lower() == 'true'
+        if fill_empty_years:
+            for year in range(start_year, end_year + 1):
+                year_str = str(year)
+                if year_str not in yearly_stats:
+                    yearly_stats[year_str] = 0
+
+        return Response({
+            'lab_id': lab_id,
+            'yearly_stats': yearly_stats,
+            'total_publications': sum(yearly_stats.values()),
+            'year_range': {
+                'start': start_year,
+                'end': end_year
+            }
+        })
+
     @cache_response('PUBLICATIONS', timeout=60*60)
     @action(detail=False, methods=['get'])
     def statistics(self, request):
