@@ -114,18 +114,39 @@ def verify_email(request, token):
     """Verify email using token from URL"""
     from django.shortcuts import render
 
+    # Get language from query parameter
+    language = request.GET.get('lang', 'ko')  # Default to Korean
+
     user = verify_email_token(token)
 
     if user:
-        return render(request, 'verification/success.html', {
+        # Determine messages based on language
+        if language == 'en':
+            message = 'Email verification completed successfully!'
+            template = 'verification/success_en.html'
+        else:
+            message = '이메일 인증이 완료되었습니다!'
+            template = 'verification/success.html'
+
+        return render(request, template, {
             'user': user,
-            'message': '이메일 인증이 완료되었습니다!',
-            'success': True
+            'message': message,
+            'success': True,
+            'language': language
         })
     else:
-        return render(request, 'verification/error.html', {
-            'error_message': '잘못되었거나 만료된 인증 토큰입니다.',
-            'success': False
+        # Determine error messages based on language
+        if language == 'en':
+            error_message = 'Invalid or expired verification token.'
+            template = 'verification/error_en.html'
+        else:
+            error_message = '잘못되었거나 만료된 인증 토큰입니다.'
+            template = 'verification/error.html'
+
+        return render(request, template, {
+            'error_message': error_message,
+            'success': False,
+            'language': language
         })
 
 
@@ -168,17 +189,35 @@ def resend_verification_email(request):
 @permission_classes([AllowAny])
 def unsubscribe(request, user_id):
     """Unsubscribe user from emails"""
+    # Get language from query parameter
+    language = request.GET.get('lang', 'ko')  # Default to Korean
+
     try:
         user = User.objects.get(id=user_id)
         # Here you might set an unsubscribe flag if you add one to the model
+
+        # Determine messages based on language
+        if language == 'en':
+            message = 'Successfully unsubscribed from emails.'
+        else:
+            message = '구독 취소가 완료되었습니다.'
+
         return Response({
-            'message': '구독 취소가 완료되었습니다.',
-            'success': True
+            'message': message,
+            'success': True,
+            'language': language
         })
     except User.DoesNotExist:
+        # Determine error messages based on language
+        if language == 'en':
+            error_message = 'User not found.'
+        else:
+            error_message = '사용자를 찾을 수 없습니다.'
+
         return Response({
-            'error': '사용자를 찾을 수 없습니다.',
-            'success': False
+            'error': error_message,
+            'success': False,
+            'language': language
         }, status=status.HTTP_404_NOT_FOUND)
 
 

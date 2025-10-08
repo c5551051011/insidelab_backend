@@ -51,19 +51,7 @@ def send_verification_email(user, request=None):
             domain = 'insidelab.up.railway.app'
             protocol = 'https'
 
-        # Generate URLs
-        verification_url = f"{protocol}://{domain}{reverse('verify_email', kwargs={'token': verification_token})}"
-        unsubscribe_url = f"{protocol}://{domain}{reverse('unsubscribe', kwargs={'user_id': user.id})}"
-
-        # Email context
-        context = {
-            'user_name': user.name or user.email.split('@')[0],
-            'verification_url': verification_url,
-            'unsubscribe_url': unsubscribe_url,
-            'domain': domain,
-        }
-
-        # Determine language and templates
+        # Determine language first (needed for URL generation)
         language = getattr(user, 'language', 'ko')  # Default to Korean for backward compatibility
 
         # Auto-detect language from email domain if not set
@@ -84,6 +72,18 @@ def send_verification_email(user, request=None):
                 ]
                 if not any(kr_domain in email_domain for kr_domain in korean_domains):
                     language = 'en'
+
+        # Generate URLs with language parameter
+        verification_url = f"{protocol}://{domain}{reverse('verify_email', kwargs={'token': verification_token})}?lang={language}"
+        unsubscribe_url = f"{protocol}://{domain}{reverse('unsubscribe', kwargs={'user_id': user.id})}?lang={language}"
+
+        # Email context
+        context = {
+            'user_name': user.name or user.email.split('@')[0],
+            'verification_url': verification_url,
+            'unsubscribe_url': unsubscribe_url,
+            'domain': domain,
+        }
 
         # Select templates based on language
         html_template = f'emails/verification_{language}.html'
