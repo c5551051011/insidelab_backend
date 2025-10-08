@@ -16,7 +16,7 @@ from .models import (
     PublicationAuthor, PublicationVenue, PublicationResearchArea
 )
 from .serializers import (
-    PublicationListSerializer, PublicationDetailSerializer,
+    PublicationMinimalSerializer, PublicationListSerializer, PublicationDetailSerializer,
     AuthorSerializer, VenueSerializer, ResearchAreaSerializer,
     CitationMetricSerializer, CollaborationSerializer,
     LabPublicationStatsSerializer
@@ -50,6 +50,11 @@ class PublicationViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return PublicationDetailSerializer
+
+        # Check for fields parameter to determine serializer
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            return PublicationMinimalSerializer
         return PublicationListSerializer
 
     @cache_response('PUBLICATIONS', timeout=60*30)

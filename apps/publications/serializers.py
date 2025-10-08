@@ -106,6 +106,68 @@ class PublicationVenueSerializer(serializers.ModelSerializer):
         ]
 
 
+class PublicationMinimalSerializer(serializers.ModelSerializer):
+    """논문 최소 필드 시리얼라이저 - Lab Detail용"""
+    authors = serializers.SerializerMethodField()
+    primary_venue_name = serializers.SerializerMethodField()
+    primary_venue_tier = serializers.SerializerMethodField()
+    research_area_names = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Publication
+        fields = [
+            'id', 'title', 'abstract', 'publication_year',
+            'doi', 'arxiv_id', 'google_scholar_id', 'citation_count',
+            'authors', 'primary_venue_name', 'primary_venue_tier',
+            'research_area_names', 'keywords', 'additional_notes',
+            'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
+            'page_count', 'language', 'h_index_contribution'
+        ]
+
+    def to_representation(self, instance):
+        """Always include all fields, even when empty"""
+        data = super().to_representation(instance)
+
+        # Ensure empty fields are included as empty strings instead of null
+        string_fields = ['abstract', 'doi', 'arxiv_id', 'google_scholar_id',
+                        'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
+                        'language', 'additional_notes']
+
+        for field in string_fields:
+            if data.get(field) is None:
+                data[field] = ""
+
+        # Ensure arrays are empty lists instead of null
+        array_fields = ['keywords', 'research_area_names']
+        for field in array_fields:
+            if data.get(field) is None:
+                data[field] = []
+
+        # Ensure numeric fields have default values
+        if data.get('page_count') is None:
+            data['page_count'] = 0
+        if data.get('h_index_contribution') is None:
+            data['h_index_contribution'] = 0.0
+
+        return data
+
+    def get_authors(self, obj):
+        """Get author names as simple list ordered by author_order"""
+        authors_qs = obj.publicationauthor_set.select_related('author').order_by('author_order')
+        return [pa.author.name for pa in authors_qs]
+
+    def get_primary_venue_name(self, obj):
+        venue = obj.primary_venue
+        return venue.display_name if venue else ""
+
+    def get_primary_venue_tier(self, obj):
+        venue = obj.primary_venue
+        return venue.tier if venue else ""
+
+    def get_research_area_names(self, obj):
+        return list(obj.research_areas.values_list('name', flat=True))
+
+
 class PublicationListSerializer(serializers.ModelSerializer):
     """논문 목록용 간단한 시리얼라이저"""
     authors = serializers.SerializerMethodField()
