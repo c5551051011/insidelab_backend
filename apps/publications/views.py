@@ -222,7 +222,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
 
         # 2. 학회/저널 옵션
         venues = publications.values(
-            'venues__id', 'venues__name', 'venues__short_name', 'venues__type'
+            'venues__id', 'venues__name', 'venues__short_name', 'venues__type', 'venues__tier'
         ).distinct().order_by('venues__name')
         venues_list = []
         seen_venues = set()
@@ -232,7 +232,8 @@ class PublicationViewSet(viewsets.ModelViewSet):
                     'id': venue['venues__id'],
                     'name': venue['venues__name'],
                     'short_name': venue['venues__short_name'] or '',
-                    'type': venue['venues__type']
+                    'type': venue['venues__type'],
+                    'tier': venue['venues__tier']
                 })
                 seen_venues.add(venue['venues__id'])
 

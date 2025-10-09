@@ -41,9 +41,9 @@ class Venue(models.Model):
 
     TIER_CHOICES = [
         ('top', 'Top Tier'),
-        ('good', 'Good'),
-        ('regular', 'Regular'),
-        ('unknown', 'Unknown'),
+        ('high', 'High Tier'),
+        ('mid', 'Mid Tier'),
+        ('workshop', 'Workshop'),
     ]
 
     CORE_RANKING_CHOICES = [
@@ -58,7 +58,7 @@ class Venue(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 
     # 등급/순위 정보
-    tier = models.CharField(max_length=10, choices=TIER_CHOICES, default='unknown')
+    tier = models.CharField(max_length=10, choices=TIER_CHOICES, default='mid')
     core_ranking = models.CharField(max_length=2, choices=CORE_RANKING_CHOICES, blank=True)
     h5_index = models.PositiveIntegerField(null=True, blank=True)
     h5_median = models.PositiveIntegerField(null=True, blank=True)
