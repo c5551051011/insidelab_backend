@@ -203,6 +203,176 @@ class PublicationViewSet(viewsets.ModelViewSet):
             }
         })
 
+    @action(detail=False, methods=['get'])
+    def filters(self, request):
+        """특정 랩의 필터 옵션 제공 API"""
+        lab_id = request.query_params.get('lab_id')
+        if not lab_id:
+            return Response(
+                {'error': 'lab_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 해당 랩의 논문들 필터링
+        publications = self.get_queryset().filter(labs=lab_id)
+
+        # 1. 연도 옵션 (발표년도 기준)
+        years = publications.values_list('publication_year', flat=True).distinct().order_by('-publication_year')
+        years_list = [year for year in years if year]
+
+        # 2. 학회/저널 옵션
+        venues = publications.values(
+            'venues__id', 'venues__name', 'venues__short_name', 'venues__type'
+        ).distinct().order_by('venues__name')
+        venues_list = []
+        seen_venues = set()
+        for venue in venues:
+            if venue['venues__id'] and venue['venues__id'] not in seen_venues:
+                venues_list.append({
+                    'id': venue['venues__id'],
+                    'name': venue['venues__name'],
+                    'short_name': venue['venues__short_name'] or '',
+                    'type': venue['venues__type']
+                })
+                seen_venues.add(venue['venues__id'])
+
+        # 3. 연구 분야 옵션
+        research_areas = publications.values(
+            'research_areas__id', 'research_areas__name'
+        ).distinct().order_by('research_areas__name')
+        research_areas_list = []
+        seen_areas = set()
+        for area in research_areas:
+            if area['research_areas__id'] and area['research_areas__id'] not in seen_areas:
+                research_areas_list.append({
+                    'id': area['research_areas__id'],
+                    'name': area['research_areas__name']
+                })
+                seen_areas.add(area['research_areas__id'])
+
+        # 4. 학회 티어 옵션
+        venue_tiers = publications.values_list('venues__tier', flat=True).distinct()
+        tiers_list = [tier for tier in venue_tiers if tier and tier != 'unknown']
+
+        # 5. 학회 타입 옵션
+        venue_types = publications.values_list('venues__type', flat=True).distinct()
+        types_list = [vtype for vtype in venue_types if vtype]
+
+        return Response({
+            'lab_id': lab_id,
+            'filters': {
+                'years': years_list,
+                'venues': venues_list,
+                'research_areas': research_areas_list,
+                'venue_tiers': sorted(list(set(tiers_list))),
+                'venue_types': sorted(list(set(types_list)))
+            }
+        })
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """특정 랩의 요약/통계 API"""
+        lab_id = request.query_params.get('lab_id')
+        if not lab_id:
+            return Response(
+                {'error': 'lab_id parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 해당 랩의 논문들 필터링
+        publications = self.get_queryset().filter(labs=lab_id)
+
+        # 기본 통계
+        total_publications = publications.count()
+        total_citations = publications.aggregate(total=Sum('citation_count'))['total'] or 0
+        avg_citations = total_citations / total_publications if total_publications > 0 else 0
+
+        # 최근 5년 논문 수
+        current_year = datetime.now().year
+        recent_publications = publications.filter(
+            publication_year__gte=current_year - 4
+        ).count()
+
+        # 탑 인용 논문
+        top_cited_paper = publications.order_by('-citation_count').first()
+        top_cited_info = None
+        if top_cited_paper:
+            top_cited_info = {
+                'id': top_cited_paper.id,
+                'title': top_cited_paper.title,
+                'citation_count': top_cited_paper.citation_count,
+                'publication_year': top_cited_paper.publication_year
+            }
+
+        # 주요 학회/저널 (논문 수 기준 상위 5개)
+        top_venues = publications.values(
+            'venues__name', 'venues__type', 'venues__tier'
+        ).annotate(
+            count=Count('id')
+        ).order_by('-count')[:5]
+
+        # 주요 연구 분야 (논문 수 기준 상위 5개)
+        top_research_areas = publications.values(
+            'research_areas__name'
+        ).annotate(
+            count=Count('id')
+        ).order_by('-count')[:5]
+
+        # 연도별 논문 수 (최근 10년)
+        yearly_counts = publications.filter(
+            publication_year__gte=current_year - 9
+        ).values('publication_year').annotate(
+            count=Count('id')
+        ).order_by('publication_year')
+
+        yearly_distribution = {}
+        for item in yearly_counts:
+            if item['publication_year']:
+                yearly_distribution[str(item['publication_year'])] = item['count']
+
+        # 오픈 액세스 논문 비율
+        open_access_count = publications.filter(is_open_access=True).count()
+        open_access_ratio = (open_access_count / total_publications * 100) if total_publications > 0 else 0
+
+        # H-index 계산 (간단 버전)
+        citations_list = list(publications.values_list('citation_count', flat=True).order_by('-citation_count'))
+        h_index = 0
+        for i, citations in enumerate(citations_list, 1):
+            if citations >= i:
+                h_index = i
+            else:
+                break
+
+        return Response({
+            'lab_id': lab_id,
+            'summary': {
+                'total_publications': total_publications,
+                'total_citations': total_citations,
+                'avg_citations_per_paper': round(avg_citations, 2),
+                'recent_publications_5years': recent_publications,
+                'h_index': h_index,
+                'open_access_ratio': round(open_access_ratio, 1)
+            },
+            'top_cited_paper': top_cited_info,
+            'top_venues': [
+                {
+                    'name': venue['venues__name'],
+                    'type': venue['venues__type'],
+                    'tier': venue['venues__tier'],
+                    'publication_count': venue['count']
+                }
+                for venue in top_venues if venue['venues__name']
+            ],
+            'top_research_areas': [
+                {
+                    'name': area['research_areas__name'],
+                    'publication_count': area['count']
+                }
+                for area in top_research_areas if area['research_areas__name']
+            ],
+            'yearly_distribution': yearly_distribution
+        })
+
     @cache_response('PUBLICATIONS', timeout=60*60)
     @action(detail=False, methods=['get'])
     def statistics(self, request):
