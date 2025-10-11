@@ -39,6 +39,14 @@ staticfiles/
 .env.test
 .env.*.local
 *.env
+.env.dev
+.env.prod
+
+# Documentation with sensitive information
+RAILWAY_DEPLOYMENT.md
+DEPLOYMENT.md
+CACHING.md
+LOCAL_DEVELOPMENT.md
 
 # IDE
 .vscode/
