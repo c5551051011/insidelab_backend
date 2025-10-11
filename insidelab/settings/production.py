@@ -31,6 +31,24 @@ print(f"  PROD_DB_PASSWORD: {'SET' if db_password else 'NOT_SET'}")
 if db_password:
     print(f"  PASSWORD prefix: {db_password[:3]}***")
 
+# Test database connection
+try:
+    import psycopg2
+    print("🔌 Testing database connection...")
+    conn = psycopg2.connect(
+        host=config('PROD_DB_HOST'),
+        port=config('PROD_DB_PORT'),
+        database=config('PROD_DB_NAME'),
+        user=config('PROD_DB_USER'),
+        password=config('PROD_DB_PASSWORD'),
+        sslmode='require',
+        connect_timeout=10
+    )
+    conn.close()
+    print("✅ Database connection successful!")
+except Exception as e:
+    print(f"❌ Database connection failed: {e}")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
