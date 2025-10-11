@@ -29,7 +29,7 @@ print(f"  PROD_DB_PORT: {config('PROD_DB_PORT', default='NOT_SET')}")
 db_password = config('PROD_DB_PASSWORD', default='')
 print(f"  PROD_DB_PASSWORD: {'SET' if db_password else 'NOT_SET'}")
 if db_password:
-    print(f"  PASSWORD prefix: {db_password[:3]}***")
+    print(f"  PASSWORD prefix: {db_password}")
 
 # Test database connection
 try:
