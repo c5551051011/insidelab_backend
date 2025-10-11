@@ -18,6 +18,16 @@ ALLOWED_HOSTS = [
 ]
 
 # Production Database Configuration (Supabase) - No fallbacks
+# Debug: Print environment variables for Railway debugging
+print("🔍 DEBUG: Railway Environment Variables:")
+print(f"  DJANGO_ENVIRONMENT: {os.environ.get('DJANGO_ENVIRONMENT', 'NOT_SET')}")
+print(f"  RAILWAY_ENVIRONMENT: {os.environ.get('RAILWAY_ENVIRONMENT', 'NOT_SET')}")
+print(f"  PROD_DB_NAME: {config('PROD_DB_NAME', default='NOT_SET')}")
+print(f"  PROD_DB_USER: {config('PROD_DB_USER', default='NOT_SET')}")
+print(f"  PROD_DB_HOST: {config('PROD_DB_HOST', default='NOT_SET')}")
+print(f"  PROD_DB_PORT: {config('PROD_DB_PORT', default='NOT_SET')}")
+print(f"  PROD_DB_PASSWORD: {'SET' if config('PROD_DB_PASSWORD', default='') else 'NOT_SET'}")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
