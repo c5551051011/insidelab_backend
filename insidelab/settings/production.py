@@ -133,7 +133,9 @@ SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 
 # Only enable HTTPS redirect if not on Railway (Railway handles HTTPS)
-if not config('RAILWAY_ENVIRONMENT', default=False, cast=bool):
+# Check if RAILWAY_ENVIRONMENT exists (Railway sets this automatically)
+railway_env = config('RAILWAY_ENVIRONMENT', default=None)
+if railway_env is None:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
