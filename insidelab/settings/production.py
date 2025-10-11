@@ -26,7 +26,10 @@ print(f"  PROD_DB_NAME: {config('PROD_DB_NAME', default='NOT_SET')}")
 print(f"  PROD_DB_USER: {config('PROD_DB_USER', default='NOT_SET')}")
 print(f"  PROD_DB_HOST: {config('PROD_DB_HOST', default='NOT_SET')}")
 print(f"  PROD_DB_PORT: {config('PROD_DB_PORT', default='NOT_SET')}")
-print(f"  PROD_DB_PASSWORD: {'SET' if config('PROD_DB_PASSWORD', default='') else 'NOT_SET'}")
+db_password = config('PROD_DB_PASSWORD', default='')
+print(f"  PROD_DB_PASSWORD: {'SET' if db_password else 'NOT_SET'}")
+if db_password:
+    print(f"  PASSWORD prefix: {db_password[:3]}***")
 
 DATABASES = {
     'default': {
