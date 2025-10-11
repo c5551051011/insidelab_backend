@@ -49,6 +49,24 @@ try:
 except Exception as e:
     print(f"❌ Database connection failed: {e}")
 
+    # Try direct connection (bypass pooler)
+    print("🔄 Trying direct connection...")
+    try:
+        direct_host = config('PROD_DB_HOST').replace('.pooler.', '.')
+        conn = psycopg2.connect(
+            host=direct_host,
+            port='5432',
+            database=config('PROD_DB_NAME'),
+            user=config('PROD_DB_USER'),
+            password=config('PROD_DB_PASSWORD'),
+            sslmode='require',
+            connect_timeout=10
+        )
+        conn.close()
+        print(f"✅ Direct connection successful to {direct_host}:5432!")
+    except Exception as e2:
+        print(f"❌ Direct connection failed: {e2}")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
