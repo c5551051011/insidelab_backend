@@ -3,7 +3,13 @@ import os
 import sys
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'insidelab.settings')
+    # Environment-based settings selection
+    environment = os.environ.get('DJANGO_ENVIRONMENT', 'development')
+
+    if environment == 'production':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'insidelab.settings.production')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'insidelab.settings.development')
 
     try:
         from django.core.management import execute_from_command_line

@@ -3,9 +3,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+def health_check(request):
+    """Health check endpoint for Railway"""
+    return JsonResponse({"status": "healthy", "environment": settings.DJANGO_ENVIRONMENT if hasattr(settings, 'DJANGO_ENVIRONMENT') else "unknown"})
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -29,8 +34,9 @@ urlpatterns = [
         path('labs/', include('apps.labs.urls')),
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
+        path('health/', health_check, name='health-check'),
     ])),
-    
+
     # API Documentation
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

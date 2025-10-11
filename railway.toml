@@ -1,0 +1,23 @@
+# Railway configuration for InsideLab Backend
+[build]
+  # Build command
+  buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+  # Start command for production
+  startCommand = "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn insidelab.wsgi:application --bind 0.0.0.0:$PORT"
+
+  # Health check
+  healthcheckPath = "/api/v1/health/"
+
+  # Restart policy
+  restartPolicyType = "on_failure"
+  restartPolicyMaxRetries = 3
+
+[environments.production]
+  # Production environment variables
+  variables = { DJANGO_ENVIRONMENT = "production" }
+
+[environments.development]
+  # Development environment variables
+  variables = { DJANGO_ENVIRONMENT = "development" }
