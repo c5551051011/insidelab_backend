@@ -41,13 +41,28 @@ REDIS_URL = None
 # Railway Redis detection
 IS_RAILWAY = 'RAILWAY_ENVIRONMENT' in os.environ
 if IS_RAILWAY:
-    # Use Railway's REDIS_PASSWORD directly with default user
-    redis_password = config('REDIS_PASSWORD', default=None)
+    # Debug: Print all Redis-related environment variables
+    print("🔍 DEBUG: All Redis environment variables:")
+    redis_env_vars = ['REDIS_URL', 'REDIS_PASSWORD', 'REDIS_PUBLIC_URL', 'REDISHOST', 'REDISPORT', 'REDISUSER', 'REDISPASSWORD']
+    for var in redis_env_vars:
+        value = os.environ.get(var, 'NOT_SET')
+        if 'PASSWORD' in var and value != 'NOT_SET':
+            print(f"  {var}: {value[:3]}***")
+        else:
+            print(f"  {var}: {value}")
 
-    if redis_password:
-        # Railway Redis with authentication
+    # Try different environment variable names
+    redis_password = config('REDIS_PASSWORD', default=None) or config('REDISPASSWORD', default=None)
+    redis_url = config('REDIS_URL', default=None)
+
+    if redis_url:
+        # Use Railway's provided REDIS_URL directly
+        REDIS_URL = redis_url
+        print(f"🔍 Using Railway REDIS_URL directly")
+    elif redis_password:
+        # Construct URL with password
         REDIS_URL = f'redis://default:{redis_password}@redis.railway.internal:6379'
-        print(f"🔍 Using Railway Redis with auth: redis://default:[REDACTED]@redis.railway.internal:6379")
+        print(f"🔍 Constructed Redis URL with password")
     else:
         # Fallback: try without authentication
         REDIS_URL = 'redis://redis.railway.internal:6379'
