@@ -7,6 +7,20 @@ from .base import *
 from decouple import config
 import os
 
+# Debug: Print Django environment and all environment variables
+print("🔍 DEBUG: Django environment configuration:")
+django_env = config('DJANGO_ENVIRONMENT', default='NOT_SET')
+print(f"  DJANGO_ENVIRONMENT: {django_env}")
+
+# Print all environment variables that contain 'DB' or 'PROD'
+print("🔍 DEBUG: All DB and PROD related environment variables:")
+for key, value in os.environ.items():
+    if 'DB' in key or 'PROD' in key:
+        if 'PASSWORD' in key and value:
+            print(f"  {key}: {value[:3]}***")
+        else:
+            print(f"  {key}: {value}")
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -19,14 +33,35 @@ ALLOWED_HOSTS = [
 ]
 
 # Production Database Configuration (Supabase) - No fallbacks
+# Debug: Print all database environment variables
+print("🔍 DEBUG: Database environment variables:")
+db_name = config('PROD_DB_NAME')
+db_user = config('PROD_DB_USER')
+db_password = config('PROD_DB_PASSWORD')
+db_host = config('PROD_DB_HOST')
+db_port = config('PROD_DB_PORT')
+
+print(f"  PROD_DB_NAME: {db_name}")
+print(f"  PROD_DB_USER: {db_user}")
+print(f"  PROD_DB_PASSWORD: {db_password[:3]}*** (length: {len(db_password)})")
+print(f"  PROD_DB_HOST: {db_host}")
+print(f"  PROD_DB_PORT: {db_port}")
+
+# Also check if regular DB_ variables are set (they shouldn't be in production)
+regular_db_vars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']
+for var in regular_db_vars:
+    value = os.environ.get(var, 'NOT_SET')
+    if value != 'NOT_SET':
+        print(f"  ⚠️ WARNING: Regular {var} is set: {value}")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('PROD_DB_NAME'),
-        'USER': config('PROD_DB_USER'),
-        'PASSWORD': config('PROD_DB_PASSWORD'),
-        'HOST': config('PROD_DB_HOST'),
-        'PORT': config('PROD_DB_PORT'),
+        'NAME': db_name,
+        'USER': db_user,
+        'PASSWORD': db_password,
+        'HOST': db_host,
+        'PORT': db_port,
         'OPTIONS': {
             'sslmode': 'require',
         },
@@ -34,6 +69,16 @@ DATABASES = {
         'CONN_HEALTH_CHECKS': True,
     }
 }
+
+# Debug: Print final database configuration that Django will use
+print("🔍 DEBUG: Final DATABASES configuration:")
+for db_alias, db_config in DATABASES.items():
+    print(f"  {db_alias}:")
+    for key, value in db_config.items():
+        if key == 'PASSWORD':
+            print(f"    {key}: {value[:3]}*** (length: {len(value)})")
+        else:
+            print(f"    {key}: {value}")
 
 # Production Cache Configuration
 REDIS_URL = None
