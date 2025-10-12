@@ -36,27 +36,27 @@ DATABASES = {
 }
 
 # Production Cache Configuration
-REDIS_URL = config('REDIS_URL', default=None)
+REDIS_URL = None
 
 # Railway Redis detection
 IS_RAILWAY = 'RAILWAY_ENVIRONMENT' in os.environ
-if IS_RAILWAY and not REDIS_URL:
-    # Check for Railway Redis environment variables
-    redis_host = config('REDISHOST', default='redis.railway.internal')
-    redis_port = config('REDISPORT', default='6379')
-    redis_password = config('REDISPASSWORD', default=None)
-    redis_user = config('REDISUSER', default=None)
+if IS_RAILWAY:
+    # Use Railway's REDIS_PASSWORD directly with default user
+    redis_password = config('REDIS_PASSWORD', default=None)
 
     if redis_password:
-        if redis_user:
-            REDIS_URL = f'redis://{redis_user}:{redis_password}@{redis_host}:{redis_port}'
-        else:
-            REDIS_URL = f'redis://:{redis_password}@{redis_host}:{redis_port}'
+        # Railway Redis with authentication
+        REDIS_URL = f'redis://default:{redis_password}@redis.railway.internal:6379'
+        print(f"🔍 Using Railway Redis with auth: redis://default:[REDACTED]@redis.railway.internal:6379")
     else:
-        # Try without authentication first
-        REDIS_URL = f'redis://{redis_host}:{redis_port}'
-
-    print(f"🔍 Redis connection: redis://[REDACTED]@{redis_host}:{redis_port}")
+        # Fallback: try without authentication
+        REDIS_URL = 'redis://redis.railway.internal:6379'
+        print(f"🔍 Using fallback Redis URL without auth")
+else:
+    # Non-Railway environment, check for manual REDIS_URL
+    REDIS_URL = config('REDIS_URL', default=None)
+    if REDIS_URL:
+        print(f"🔍 Using manual REDIS_URL")
 
 if REDIS_URL:
     # Production Redis configuration
