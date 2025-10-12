@@ -18,7 +18,6 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
-
 # Production Database Configuration (Supabase) - No fallbacks
 DATABASES = {
     'default': {
@@ -35,6 +34,7 @@ DATABASES = {
         'CONN_HEALTH_CHECKS': True,
     }
 }
+
 
 # Production Cache Configuration
 REDIS_URL = config('REDIS_URL', default=None)
@@ -57,8 +57,6 @@ if REDIS_URL:
                     'retry_on_timeout': True,
                     'socket_connect_timeout': 10,
                     'socket_timeout': 10,
-                    'ssl_cert_reqs': None,
-                    'ssl_check_hostname': False,
                 },
                 'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
