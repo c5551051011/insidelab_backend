@@ -131,7 +131,7 @@ if REDIS_URL:
                     'socket_connect_timeout': 10,
                     'socket_timeout': 10,
                 },
-                'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+                'SERIALIZER': 'django_redis.serializers.pickle.PickleSerializer',
                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
             },
             'KEY_PREFIX': 'insidelab_prod',

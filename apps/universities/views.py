@@ -164,8 +164,6 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-@method_decorator(cache_page(60 * 60 * 6), name='list')  # Cache list for 6 hours
-@method_decorator(cache_page(60 * 60 * 3), name='retrieve')  # Cache detail for 3 hours
 class ProfessorViewSet(viewsets.ModelViewSet):
     queryset = Professor.objects.select_related(
         'university_department__university',

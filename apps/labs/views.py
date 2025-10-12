@@ -19,8 +19,6 @@ from .serializers import (
 from .filters import LabFilter
 from apps.utils.cache import cache_response, CacheManager
 
-@method_decorator(cache_page(60 * 30), name='list')  # Cache list for 30 minutes
-@method_decorator(cache_page(60 * 60), name='retrieve')  # Cache detail for 1 hour
 class LabViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
