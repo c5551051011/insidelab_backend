@@ -13,12 +13,60 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Production hosts
 ALLOWED_HOSTS = [
     'insidelab.up.railway.app',
-    'healthcheck.railway.app',
     config('PRODUCTION_DOMAIN', default=''),
-    'localhost',
+    'localhost',  # For health checks
 ]
 
 # Production Database Configuration (Supabase) - No fallbacks
+# Debug: Print environment variables for Railway debugging
+print("🔍 DEBUG: Railway Environment Variables:")
+print(f"  DJANGO_ENVIRONMENT: {os.environ.get('DJANGO_ENVIRONMENT', 'NOT_SET')}")
+print(f"  RAILWAY_ENVIRONMENT: {os.environ.get('RAILWAY_ENVIRONMENT', 'NOT_SET')}")
+print(f"  PROD_DB_NAME: {config('PROD_DB_NAME', default='NOT_SET')}")
+print(f"  PROD_DB_USER: {config('PROD_DB_USER', default='NOT_SET')}")
+print(f"  PROD_DB_HOST: {config('PROD_DB_HOST', default='NOT_SET')}")
+print(f"  PROD_DB_PORT: {config('PROD_DB_PORT', default='NOT_SET')}")
+db_password = config('PROD_DB_PASSWORD', default='')
+print(f"  PROD_DB_PASSWORD: {'SET' if db_password else 'NOT_SET'}")
+if db_password:
+    print(f"  PASSWORD prefix: {db_password}")
+
+# Test database connection
+try:
+    import psycopg2
+    print("🔌 Testing database connection...")
+    conn = psycopg2.connect(
+        host=config('PROD_DB_HOST'),
+        port=config('PROD_DB_PORT'),
+        database=config('PROD_DB_NAME'),
+        user=config('PROD_DB_USER'),
+        password=config('PROD_DB_PASSWORD'),
+        sslmode='require',
+        connect_timeout=10
+    )
+    conn.close()
+    print("✅ Database connection successful!")
+except Exception as e:
+    print(f"❌ Database connection failed: {e}")
+
+    # Try direct connection (bypass pooler)
+    print("🔄 Trying direct connection...")
+    try:
+        direct_host = config('PROD_DB_HOST').replace('.pooler.', '.')
+        conn = psycopg2.connect(
+            host=direct_host,
+            port='5432',
+            database=config('PROD_DB_NAME'),
+            user=config('PROD_DB_USER'),
+            password=config('PROD_DB_PASSWORD'),
+            sslmode='require',
+            connect_timeout=10
+        )
+        conn.close()
+        print(f"✅ Direct connection successful to {direct_host}:5432!")
+    except Exception as e2:
+        print(f"❌ Direct connection failed: {e2}")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -35,15 +83,28 @@ DATABASES = {
     }
 }
 
-
 # Production Cache Configuration
 REDIS_URL = config('REDIS_URL', default=None)
 
 # Railway Redis detection
 IS_RAILWAY = 'RAILWAY_ENVIRONMENT' in os.environ
 if IS_RAILWAY and not REDIS_URL:
-    # Use Railway's internal Redis service
-    REDIS_URL = 'redis://redis.railway.internal:6379'
+    # Check for Railway Redis environment variables
+    redis_host = config('REDISHOST', default='redis.railway.internal')
+    redis_port = config('REDISPORT', default='6379')
+    redis_password = config('REDISPASSWORD', default=None)
+    redis_user = config('REDISUSER', default=None)
+
+    if redis_password:
+        if redis_user:
+            REDIS_URL = f'redis://{redis_user}:{redis_password}@{redis_host}:{redis_port}'
+        else:
+            REDIS_URL = f'redis://:{redis_password}@{redis_host}:{redis_port}'
+    else:
+        # Try without authentication first
+        REDIS_URL = f'redis://{redis_host}:{redis_port}'
+
+    print(f"🔍 Redis connection: redis://[REDACTED]@{redis_host}:{redis_port}")
 
 if REDIS_URL:
     # Production Redis configuration
