@@ -133,9 +133,10 @@ if REDIS_URL:
                 },
                 'SERIALIZER': 'django_redis.serializers.pickle.PickleSerializer',
                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                'IGNORE_EXCEPTIONS': True,  # Ignore cache errors to prevent application crashes
             },
             'KEY_PREFIX': 'insidelab_prod',
-            'VERSION': 1,
+            'VERSION': 2,  # Incremented to invalidate old JSON-serialized cache
             'TIMEOUT': 300,
         }
     }
