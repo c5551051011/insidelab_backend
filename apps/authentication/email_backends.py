@@ -20,6 +20,9 @@ class ResendEmailBackend(BaseEmailBackend):
 
     def send_messages(self, email_messages):
         """Send email messages using Resend API"""
+        logger.info(f"🔍 DEBUG: Attempting to send {len(email_messages)} email(s)")
+        logger.info(f"🔍 DEBUG: API key configured: {'Yes' if self.api_key else 'No'}")
+
         if not self.api_key:
             logger.error("RESEND_API_KEY not configured")
             return 0
@@ -27,6 +30,7 @@ class ResendEmailBackend(BaseEmailBackend):
         num_sent = 0
         for message in email_messages:
             try:
+                logger.info(f"🔍 DEBUG: Sending email to {message.to} from {message.from_email}")
                 # Prepare email data for Resend
                 email_data = {
                     "from": message.from_email,

@@ -265,6 +265,16 @@ os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 # Production email configuration (uses Resend)
 EMAIL_BACKEND = 'apps.authentication.email_backends.ResendEmailBackend'
 
+# Email settings for Resend
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='InsideLab <noreply@insidelab.io>')
+
+# Debug: Print email configuration
+print("🔍 DEBUG: Email configuration:")
+print(f"  RESEND_API_KEY: {'SET' if RESEND_API_KEY else 'NOT_SET'}")
+print(f"  DEFAULT_FROM_EMAIL: {DEFAULT_FROM_EMAIL}")
+print(f"  EMAIL_BACKEND: {EMAIL_BACKEND}")
+
 # Site domain for production
 SITE_DOMAIN = config('SITE_DOMAIN', default='insidelab.io')
 

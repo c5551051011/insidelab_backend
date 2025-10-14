@@ -93,6 +93,12 @@ InsideLab Team
             """.strip()
 
             # Send email
+            logger.info(f"🔍 DEBUG: About to send email via send_mail()")
+            logger.info(f"🔍 DEBUG: Subject: {subject}")
+            logger.info(f"🔍 DEBUG: From: {settings.DEFAULT_FROM_EMAIL}")
+            logger.info(f"🔍 DEBUG: To: {university_email}")
+            logger.info(f"🔍 DEBUG: Settings.EMAIL_BACKEND: {getattr(settings, 'EMAIL_BACKEND', 'Not set')}")
+
             send_mail(
                 subject=subject,
                 message=plain_message,
@@ -101,6 +107,8 @@ InsideLab Team
                 recipient_list=[university_email],
                 fail_silently=False,
             )
+
+            logger.info(f"🔍 DEBUG: send_mail() completed successfully")
 
             logger.info(f"University verification email sent to {university_email} for user {user.id}")
             return True, "Verification email sent successfully"
