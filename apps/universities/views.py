@@ -76,6 +76,9 @@ class UniversityViewSet(viewsets.ModelViewSet):
                 if serializer.is_valid():
                     university_dept = serializer.save(university=university)
 
+                    # Clear cache for this university
+                    CacheManager.delete_university_departments(university.id)
+
                     # Return enhanced response with department creation info
                     response_data = serializer.data
                     response_data['department_created'] = created
@@ -97,7 +100,7 @@ class UniversityViewSet(viewsets.ModelViewSet):
                     serializer.save(university=university)
 
                     # Clear cache for this university (simplified approach)
-                    # CacheManager.delete_university_departments(university.id)
+                    CacheManager.delete_university_departments(university.id)
 
                     return Response(serializer.data, status=201)
                 return Response(serializer.errors, status=400)
