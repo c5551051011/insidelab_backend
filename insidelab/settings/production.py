@@ -167,6 +167,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://insidelab.io",
     "https://www.insidelab.io",
     "https://c5551051011.github.io",
+    "http://localhost:3000",  # For local development
+    "https://localhost:3000", # For local HTTPS development
     config('FRONTEND_URL', default=''),
 ]
 
