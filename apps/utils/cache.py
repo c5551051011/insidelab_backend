@@ -129,6 +129,12 @@ class CacheManager:
         cache.set(cache_key, data, cache_timeout)
 
     @staticmethod
+    def delete_university_departments(university_id):
+        """Delete cached departments for a university"""
+        cache_key = get_cache_key('DEPARTMENTS', 'university', university_id)
+        cache.delete(cache_key)
+
+    @staticmethod
     def get_labs(filters=None):
         """Get cached labs list"""
         cache_key = get_cache_key('LABS', 'list', filters or {})
