@@ -72,6 +72,27 @@ class UniversityViewSet(viewsets.ModelViewSet):
                 serializer_data.pop('description', None)
                 serializer_data.pop('common_names', None)
 
+                # Check if UniversityDepartment already exists
+                existing_university_dept = UniversityDepartment.objects.filter(
+                    university=university,
+                    department=department
+                ).first()
+
+                if existing_university_dept:
+                    # Return existing data instead of error
+                    serializer = UniversityDepartmentSerializer(existing_university_dept)
+                    response_data = serializer.data
+                    response_data['department_created'] = created
+                    response_data['university_department_created'] = False
+                    response_data['department_info'] = {
+                        'id': department.id,
+                        'name': department.name,
+                        'description': department.description,
+                        'common_names': department.common_names
+                    }
+                    return Response(response_data, status=200)
+
+                # Create new UniversityDepartment
                 serializer = UniversityDepartmentSerializer(data=serializer_data)
                 if serializer.is_valid():
                     university_dept = serializer.save(university=university)
@@ -82,6 +103,7 @@ class UniversityViewSet(viewsets.ModelViewSet):
                     # Return enhanced response with department creation info
                     response_data = serializer.data
                     response_data['department_created'] = created
+                    response_data['university_department_created'] = True
                     response_data['department_info'] = {
                         'id': department.id,
                         'name': department.name,
@@ -94,16 +116,36 @@ class UniversityViewSet(viewsets.ModelViewSet):
 
             else:
                 # Existing flow: Use department ID
-                serializer = UniversityDepartmentSerializer(data=request.data)
-                if serializer.is_valid():
-                    # Ensure the university matches the URL parameter
-                    serializer.save(university=university)
+                department_id = request.data.get('department')
+                if department_id:
+                    # Check if UniversityDepartment already exists
+                    existing_university_dept = UniversityDepartment.objects.filter(
+                        university=university,
+                        department_id=department_id
+                    ).first()
 
-                    # Clear cache for this university (simplified approach)
-                    CacheManager.delete_university_departments(university.id)
+                    if existing_university_dept:
+                        # Return existing data instead of error
+                        serializer = UniversityDepartmentSerializer(existing_university_dept)
+                        response_data = serializer.data
+                        response_data['university_department_created'] = False
+                        return Response(response_data, status=200)
 
-                    return Response(serializer.data, status=201)
-                return Response(serializer.errors, status=400)
+                    # Create new UniversityDepartment
+                    serializer = UniversityDepartmentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        # Ensure the university matches the URL parameter
+                        serializer.save(university=university)
+
+                        # Clear cache for this university (simplified approach)
+                        CacheManager.delete_university_departments(university.id)
+
+                        response_data = serializer.data
+                        response_data['university_department_created'] = True
+                        return Response(response_data, status=201)
+                    return Response(serializer.errors, status=400)
+                else:
+                    return Response({"error": "Either department_name or department ID is required"}, status=400)
 
     @cache_response('PROFESSORS')
     @action(detail=True, methods=['get'])
