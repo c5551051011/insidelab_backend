@@ -4,10 +4,22 @@ from rest_framework import serializers
 from .models import University, Professor, ResearchGroup, UniversityDepartment, Department
 
 
+class UniversityMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields = ['id', 'name', 'city', 'country']
+
+
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = University
         fields = '__all__'
+
+
+class DepartmentMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['id', 'name']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
