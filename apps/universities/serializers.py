@@ -65,34 +65,8 @@ class ResearchGroupSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Create the instance using direct database insert to bypass property conflicts
-        university_department = validated_data.get('university_department')
-        if university_department:
-            from django.db import connection
-            import json
-
-            # Insert directly to database to avoid property conflicts
-            cursor = connection.cursor()
-            cursor.execute('''
-                INSERT INTO research_groups
-                (name, description, website, research_areas, department, university_id, university_department_id, created_at, updated_at, head_professor_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), %s)
-                RETURNING id
-            ''', [
-                validated_data['name'],
-                validated_data.get('description', ''),
-                validated_data.get('website', ''),
-                json.dumps(validated_data.get('research_areas', [])),
-                university_department.department.name,  # Legacy field
-                university_department.university.id,    # Legacy field
-                university_department.id,              # New field
-                validated_data.get('head_professor', {}).get('id') if validated_data.get('head_professor') else None
-            ])
-
-            new_id = cursor.fetchone()[0]
-            return ResearchGroup.objects.get(id=new_id)
-
-        return super().create(validated_data)
+        # Standard Django ORM approach
+        return ResearchGroup.objects.create(**validated_data)
 
     def get_university_name(self, obj):
         return obj.university_department.university.name if obj.university_department else None
