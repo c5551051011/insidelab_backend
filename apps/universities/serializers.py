@@ -63,10 +63,10 @@ class ResearchGroupSerializer(serializers.ModelSerializer):
             'head_professor_name', 'professor_count', 'lab_count',
             'created_at', 'updated_at'
         ]
-
-    def create(self, validated_data):
-        # Standard Django ORM approach
-        return ResearchGroup.objects.create(**validated_data)
+        read_only_fields = [
+            'id', 'university_name', 'department_name', 'head_professor_name',
+            'professor_count', 'lab_count', 'created_at', 'updated_at'
+        ]
 
     def get_university_name(self, obj):
         return obj.university_department.university.name if obj.university_department else None
