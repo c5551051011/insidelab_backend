@@ -48,6 +48,12 @@ class UniversityDepartmentSerializer(serializers.ModelSerializer):
         }
 
 
+class ResearchGroupMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResearchGroup
+        fields = ['id', 'name']
+
+
 class ResearchGroupSerializer(serializers.ModelSerializer):
     university_name = serializers.SerializerMethodField()
     department_name = serializers.SerializerMethodField()

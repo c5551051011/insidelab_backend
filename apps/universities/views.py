@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import University, Professor, ResearchGroup, UniversityDepartment, Department
-from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorSerializer, ResearchGroupSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
+from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorSerializer, ResearchGroupMinimalSerializer, ResearchGroupSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
 from apps.utils.cache import cache_response, CacheManager
 
 class UniversityViewSet(viewsets.ModelViewSet):
@@ -193,6 +193,13 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description', 'research_areas']
     ordering_fields = ['name', 'created_at', 'professor_count', 'lab_count']
     ordering = ['university_department__university__name', 'university_department__department__name', 'name']
+
+    def get_serializer_class(self):
+        # Check for fields parameter to determine serializer
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            return ResearchGroupMinimalSerializer
+        return ResearchGroupSerializer
 
     @cache_response('PROFESSORS')
     @action(detail=True, methods=['get'])
