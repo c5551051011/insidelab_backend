@@ -83,6 +83,10 @@ class UniversityViewSet(viewsets.ModelViewSet):
                 serializer_data['department'] = department.id
                 serializer_data['university'] = university.id
 
+                # Set local_name to department.name if not provided
+                if not serializer_data.get('local_name'):
+                    serializer_data['local_name'] = department.name
+
                 # Remove department creation fields to avoid serializer errors
                 serializer_data.pop('department_name', None)
                 serializer_data.pop('description', None)
@@ -148,7 +152,15 @@ class UniversityViewSet(viewsets.ModelViewSet):
                         return Response(response_data, status=200)
 
                     # Create new UniversityDepartment
-                    serializer = UniversityDepartmentSerializer(data=request.data)
+                    serializer_data = request.data.copy()
+
+                    # Set local_name to department.name if not provided
+                    if not serializer_data.get('local_name'):
+                        from .models import Department
+                        department = Department.objects.get(id=department_id)
+                        serializer_data['local_name'] = department.name
+
+                    serializer = UniversityDepartmentSerializer(data=serializer_data)
                     if serializer.is_valid():
                         # Ensure the university matches the URL parameter
                         serializer.save(university=university)
