@@ -34,11 +34,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class UniversityDepartmentMinimalSerializer(serializers.ModelSerializer):
-    department_name = serializers.CharField(source='department.name', read_only=True)
+    name = serializers.CharField(source='local_name', read_only=True)
 
     class Meta:
         model = UniversityDepartment
-        fields = ['id', 'department_name']
+        fields = ['id', 'name']
 
 
 class UniversityDepartmentSerializer(serializers.ModelSerializer):
