@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import University, Professor, ResearchGroup, UniversityDepartment, Department
-from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorSerializer, ResearchGroupMinimalSerializer, ResearchGroupSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
+from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorSerializer, ResearchGroupMinimalSerializer, ResearchGroupSerializer, UniversityDepartmentMinimalSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
 from apps.utils.cache import cache_response, CacheManager
 
 class UniversityViewSet(viewsets.ModelViewSet):
@@ -34,20 +34,29 @@ class UniversityViewSet(viewsets.ModelViewSet):
         university = self.get_object()
 
         if request.method == 'GET':
-            # Try to get from cache first
-            cached_data = CacheManager.get_university_departments(university.id)
-            if cached_data is not None:
-                return Response(cached_data)
+            # Check for fields parameter first
+            fields = request.query_params.get('fields', 'full')
+
+            # Try to get from cache first (only for full version)
+            if fields != 'minimal':
+                cached_data = CacheManager.get_university_departments(university.id)
+                if cached_data is not None:
+                    return Response(cached_data)
 
             university_departments = UniversityDepartment.objects.filter(
                 university=university,
                 is_active=True
             ).select_related('department', 'university').order_by('department__name')
 
-            serializer = UniversityDepartmentSerializer(university_departments, many=True)
+            # Use serializer based on fields parameter
+            if fields == 'minimal':
+                serializer = UniversityDepartmentMinimalSerializer(university_departments, many=True)
+            else:
+                serializer = UniversityDepartmentSerializer(university_departments, many=True)
 
-            # Cache the response
-            CacheManager.set_university_departments(university.id, serializer.data)
+            # Cache the response (only cache full version to avoid complexity)
+            if fields != 'minimal':
+                CacheManager.set_university_departments(university.id, serializer.data)
 
             return Response(serializer.data)
 

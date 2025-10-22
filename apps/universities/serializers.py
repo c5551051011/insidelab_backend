@@ -33,6 +33,14 @@ class DepartmentSerializer(serializers.ModelSerializer):
         return obj.university_departments.filter(is_active=True).count()
 
 
+class UniversityDepartmentMinimalSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.name', read_only=True)
+
+    class Meta:
+        model = UniversityDepartment
+        fields = ['id', 'department_name']
+
+
 class UniversityDepartmentSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source='department.name', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
