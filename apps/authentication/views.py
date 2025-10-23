@@ -8,6 +8,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .serializers import (
     UserSerializer, RegisterSerializer, UserLabInterestSerializer,
     UserLabInterestCreateSerializer
@@ -17,6 +19,10 @@ from .utils import send_verification_email, verify_email_token
 from .utils import resend_verification_email as resend_email_util
 from .utils import send_feedback_email
 from .university_verification import UniversityEmailVerification
+from .swagger_schemas import (
+    register_request_body, register_response, error_response, success_response,
+    login_request_body, login_response, google_auth_request, feedback_request
+)
 
 User = get_user_model()
 
@@ -36,7 +42,18 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
-    
+
+    @swagger_auto_schema(
+        operation_summary="사용자 회원가입",
+        operation_description="새로운 사용자를 등록하고 이메일 인증을 발송합니다.",
+        request_body=register_request_body,
+        responses={
+            201: register_response,
+            400: error_response,
+            500: error_response
+        },
+        tags=['Authentication']
+    )
     def create(self, request, *args, **kwargs):
         try:
             with transaction.atomic():
@@ -80,7 +97,18 @@ class RegisterView(generics.CreateAPIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-    
+
+    @swagger_auto_schema(
+        operation_summary="사용자 로그인",
+        operation_description="이메일과 비밀번호로 로그인하여 JWT 토큰을 발급받습니다.",
+        request_body=login_request_body,
+        responses={
+            200: login_response,
+            401: error_response,
+            404: error_response
+        },
+        tags=['Authentication']
+    )
     def post(self, request, *args, **kwargs):
         try:
             # Check if user exists with provided email
@@ -258,6 +286,17 @@ def test_registration(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary="Google OAuth 로그인",
+    operation_description="Google 계정으로 로그인하거나 신규 가입합니다.",
+    request_body=google_auth_request,
+    responses={
+        200: login_response,
+        400: error_response
+    },
+    tags=['Authentication']
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def google_auth(request):
@@ -559,6 +598,18 @@ def check_university_email(request):
     })
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary="피드백 전송",
+    operation_description="InsideLab 팀에 문의사항이나 피드백을 전송합니다.",
+    request_body=feedback_request,
+    responses={
+        200: success_response,
+        400: error_response,
+        500: error_response
+    },
+    tags=['Feedback']
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_feedback(request):
