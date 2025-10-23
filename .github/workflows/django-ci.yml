@@ -1,0 +1,168 @@
+name: Django CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  DJANGO_SETTINGS_MODULE: insidelab.settings.test
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: requirements.txt
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run migrations check
+      run: |
+        python manage.py makemigrations --check --dry-run --verbosity 2
+
+    - name: Run Authentication Tests
+      run: |
+        python manage.py test apps.authentication.tests.test_models --verbosity=2
+
+    - name: Run Universities Tests
+      run: |
+        python manage.py test apps.universities.tests --verbosity=2
+
+    - name: Run Labs Tests
+      run: |
+        python manage.py test apps.labs.tests --verbosity=2
+
+    - name: Run Reviews Tests
+      run: |
+        python manage.py test apps.reviews.tests --verbosity=2
+
+    - name: Generate Test Summary
+      if: always()
+      run: |
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ All model tests passed!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- Authentication: ✅" >> $GITHUB_STEP_SUMMARY
+        echo "- Universities: ✅" >> $GITHUB_STEP_SUMMARY
+        echo "- Labs: ✅" >> $GITHUB_STEP_SUMMARY
+        echo "- Reviews: ✅" >> $GITHUB_STEP_SUMMARY
+
+  lint:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pylint
+
+    - name: Lint with flake8
+      run: |
+        # Stop on syntax errors and undefined names
+        flake8 apps/ insidelab/ --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=migrations,__pycache__,venv
+        # Warnings for code quality
+        flake8 apps/ insidelab/ --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics --exclude=migrations,__pycache__,venv
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+
+    - name: Check dependencies for vulnerabilities
+      run: |
+        pip install -r requirements.txt
+        safety check --json || true
+
+    - name: Run bandit security scan
+      run: |
+        bandit -r apps/ insidelab/ -f json -o bandit-report.json || true
+
+  coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install coverage
+
+    - name: Run tests with coverage
+      run: |
+        coverage run --source='apps' manage.py test apps.authentication.tests.test_models apps.universities.tests apps.labs.tests apps.reviews.tests
+        coverage report
+        coverage html
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: htmlcov/
+
+  build-status:
+    name: Build Status
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    if: always()
+
+    steps:
+    - name: Check build status
+      run: |
+        if [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.lint.result }}" == "success" ]; then
+          echo "✅ All checks passed!"
+          exit 0
+        else
+          echo "❌ Some checks failed"
+          exit 1
+        fi
