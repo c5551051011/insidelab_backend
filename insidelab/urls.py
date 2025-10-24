@@ -80,6 +80,15 @@ Authorization: Bearer <access_token>
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
+    patterns=[path('api/v1/', include([
+        path('auth/', include('apps.authentication.urls')),
+        path('universities/', include('apps.universities.urls')),
+        path('departments/', include('apps.universities.department_urls')),
+        path('professors/', include('apps.universities.professors_urls')),
+        path('labs/', include('apps.labs.urls')),
+        path('publications/', include('apps.publications.urls')),
+        path('reviews/', include('apps.reviews.urls')),
+    ]))],
 )
 
 urlpatterns = [
@@ -94,14 +103,14 @@ urlpatterns = [
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
         path('health/', health_check, name='health-check'),
-
-        # API Documentation under /api/v1/
-        path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-        path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-        path('swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
-        path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-        path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-docs'),
     ])),
+
+    # API Documentation at root level (to see all /api/v1/ endpoints)
+    path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/v1/swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('api/v1/swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
+    path('api/v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-docs'),
 
     # Root level documentation (for convenience)
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-root'),
