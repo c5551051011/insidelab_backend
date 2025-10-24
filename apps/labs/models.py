@@ -60,29 +60,32 @@ class Lab(models.Model):
         ordering = ['-overall_rating', '-review_count']
 
     def __str__(self):
-        return f"{self.name} - {self.professor.name}"
+        try:
+            professor_name = self.professor.name if self.professor else "No Professor"
+        except:
+            professor_name = "No Professor"
+        return f"{self.name} - {professor_name}"
 
     def save(self, *args, **kwargs):
         """Auto-populate university_department and research group from professor if not set"""
-        if self.professor:
-            # Auto-populate university_department from professor
-            if not self.university_department and hasattr(self.professor, 'university_department'):
-                self.university_department = self.professor.university_department
+        try:
+            # Check if professor is set and accessible
+            if self.professor_id and self.professor:
+                # Auto-populate university_department from professor
+                if not self.university_department and hasattr(self.professor, 'university_department'):
+                    self.university_department = self.professor.university_department
 
-            # Auto-populate research group from professor
-            if not self.research_group and self.professor.research_group:
-                self.research_group = self.professor.research_group
+                # Auto-populate research group from professor
+                if not self.research_group and self.professor.research_group:
+                    self.research_group = self.professor.research_group
 
-            # Update legacy fields for backward compatibility
-            if hasattr(self.professor, 'university_department') and self.professor.university_department:
-                self.university = self.professor.university_department.university
-                self.department = self.professor.university_department.display_name
-            else:
-                # Fallback to legacy fields if they exist
-                if hasattr(self.professor, 'university'):
-                    self.university = self.professor.university
-                if hasattr(self.professor, 'department'):
-                    self.department = self.professor.department
+                # Update legacy fields for backward compatibility
+                if hasattr(self.professor, 'university_department') and self.professor.university_department:
+                    self.university = self.professor.university_department.university
+                    self.department = self.professor.university_department.display_name
+        except (AttributeError, models.ObjectDoesNotExist):
+            # Professor not set or not accessible, skip auto-population
+            pass
 
         super().save(*args, **kwargs)
 
