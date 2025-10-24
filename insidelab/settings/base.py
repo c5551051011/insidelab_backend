@@ -182,3 +182,6 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='InsideLab <noreply@in
 
 # Site Configuration for email links
 SITE_DOMAIN = config('SITE_DOMAIN', default='localhost:8000')
+
+# Login URL for Django admin and Swagger UI
+LOGIN_URL = '/admin/login/'
