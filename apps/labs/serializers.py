@@ -44,9 +44,15 @@ class LabListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lab
-        fields = ['id', 'name', 'professor_name', 'university_name', 'department',
+        fields = ['id', 'name', 'professor', 'professor_name', 'university_name', 'department',
                  'research_group_name', 'overall_rating', 'review_count',
-                 'research_areas', 'tags', 'recruitment_status']
+                 'research_areas', 'tags', 'recruitment_status', 'university_department',
+                 'university', 'description', 'website', 'lab_size']
+        extra_kwargs = {
+            'professor': {'write_only': True},
+            'university_department': {'write_only': True},
+            'university': {'write_only': True},
+        }
 
     def get_department(self, obj):
         """Return the best available department name"""
