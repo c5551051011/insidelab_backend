@@ -22,6 +22,7 @@ def create_admin_user(sender, **kwargs):
     from django.contrib.auth import get_user_model
     from decouple import config
     import logging
+    import sys
 
     logger = logging.getLogger(__name__)
 
@@ -33,21 +34,29 @@ def create_admin_user(sender, **kwargs):
         admin_email = config('ADMIN_EMAIL', default='insidelab.25@gmail.com')
         admin_password = config('ADMIN_PASSWORD', default='insidelab.25@gmail.com')
 
+        print(f'🔍 [SIGNAL] Checking for admin user "{admin_username}"...', file=sys.stderr)
+        logger.info(f'Checking for admin user "{admin_username}"')
+
         # Check if admin user already exists
         if User.objects.filter(username=admin_username).exists():
-            logger.info(f'Admin user "{admin_username}" already exists.')
+            message = f'⚠️ [SIGNAL] Admin user "{admin_username}" already exists.'
+            logger.info(message)
+            print(message, file=sys.stderr)
             return
 
         # Create admin user
+        print(f'🚀 [SIGNAL] Creating admin user "{admin_username}"...', file=sys.stderr)
         admin_user = User.objects.create_superuser(
             username=admin_username,
             email=admin_email,
             password=admin_password
         )
 
-        logger.info(f'Successfully created admin user "{admin_username}"')
-        print(f'✅ Admin user created: {admin_username} / {admin_password}')
+        success_message = f'✅ [SIGNAL] Admin user created: {admin_username} / {admin_password}'
+        logger.info(success_message)
+        print(success_message, file=sys.stderr)
 
     except Exception as e:
-        logger.error(f'Error creating admin user: {e}')
-        print(f'❌ Error creating admin user: {e}')
+        error_message = f'❌ [SIGNAL] Error creating admin user: {e}'
+        logger.error(error_message)
+        print(error_message, file=sys.stderr)
