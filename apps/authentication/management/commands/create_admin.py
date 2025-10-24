@@ -7,30 +7,46 @@ class Command(BaseCommand):
     help = 'Create admin user for production'
 
     def handle(self, *args, **options):
-        User = get_user_model()
+        import sys
 
-        # Admin credentials from environment variables
-        admin_username = config('ADMIN_USERNAME', default='admin')
-        admin_email = config('ADMIN_EMAIL', default='insidelab.25@gmail.com')
-        admin_password = config('ADMIN_PASSWORD', default='insidelab.25@gmail.com')
+        try:
+            User = get_user_model()
 
-        # Check if admin user already exists
-        if User.objects.filter(username=admin_username).exists():
-            self.stdout.write(
-                self.style.WARNING(f'Admin user "{admin_username}" already exists.')
+            # Admin credentials from environment variables
+            admin_username = config('ADMIN_USERNAME', default='admin')
+            admin_email = config('ADMIN_EMAIL', default='insidelab.25@gmail.com')
+            admin_password = config('ADMIN_PASSWORD', default='insidelab.25@gmail.com')
+
+            self.stdout.write('🔍 Checking for existing admin user...')
+            print('🔍 Checking for existing admin user...', file=sys.stderr)
+
+            # Check if admin user already exists
+            if User.objects.filter(username=admin_username).exists():
+                message = f'⚠️  Admin user "{admin_username}" already exists.'
+                self.stdout.write(self.style.WARNING(message))
+                print(message, file=sys.stderr)
+                return
+
+            # Create admin user
+            self.stdout.write('🚀 Creating new admin user...')
+            print('🚀 Creating new admin user...', file=sys.stderr)
+
+            admin_user = User.objects.create_superuser(
+                username=admin_username,
+                email=admin_email,
+                password=admin_password
             )
-            return
 
-        # Create admin user
-        admin_user = User.objects.create_superuser(
-            username=admin_username,
-            email=admin_email,
-            password=admin_password
-        )
+            success_message = f'✅ Successfully created admin user "{admin_username}"'
+            self.stdout.write(self.style.SUCCESS(success_message))
+            print(success_message, file=sys.stderr)
 
-        self.stdout.write(
-            self.style.SUCCESS(f'Successfully created admin user "{admin_username}"')
-        )
-        self.stdout.write(f'Username: {admin_username}')
-        self.stdout.write(f'Email: {admin_email}')
-        self.stdout.write(f'Password: {admin_password}')
+            credentials = f'📋 Credentials: {admin_username} / {admin_password}'
+            self.stdout.write(credentials)
+            print(credentials, file=sys.stderr)
+
+        except Exception as e:
+            error_message = f'❌ Error creating admin user: {e}'
+            self.stdout.write(self.style.ERROR(error_message))
+            print(error_message, file=sys.stderr)
+            raise
