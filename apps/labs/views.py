@@ -20,7 +20,7 @@ from .filters import LabFilter
 from apps.utils.cache import cache_response, CacheManager
 
 class LabViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = LabFilter
     search_fields = ['name', 'professor__name', 'university__name', 'research_areas']
