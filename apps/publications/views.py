@@ -53,7 +53,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
 
         # Check for fields parameter to determine serializer
         fields = self.request.query_params.get('fields', 'full')
-        if fields == 'minimal':
+        if fields == '':
             return PublicationMinimalSerializer
         return PublicationListSerializer
 
