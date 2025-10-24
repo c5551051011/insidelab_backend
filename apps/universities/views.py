@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import University, Professor, ResearchGroup, UniversityDepartment, Department
-from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorSerializer, ResearchGroupMinimalSerializer, ResearchGroupSerializer, UniversityDepartmentMinimalSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
+from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorMinimalSerializer, ProfessorSerializer, ResearchGroupMinimalSerializer, ResearchGroupSerializer, UniversityDepartmentMinimalSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
 from apps.utils.cache import cache_response, CacheManager
 
 class UniversityViewSet(viewsets.ModelViewSet):
@@ -245,18 +245,38 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
 
 
 class ProfessorViewSet(viewsets.ModelViewSet):
-    queryset = Professor.objects.select_related(
-        'university_department__university',
-        'university_department__department',
-        'research_group'
-    )
-    serializer_class = ProfessorSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['university_department__university', 'university_department__department', 'research_group']
     search_fields = ['name', 'research_interests']
     ordering_fields = ['name', 'created_at']
     ordering = ['name']
+
+    def get_queryset(self):
+        # Check for fields parameter to optimize queries
+        fields = self.request.query_params.get('fields', 'full')
+
+        if fields == 'minimal':
+            # For minimal fields, prefetch labs relationships
+            return Professor.objects.select_related(
+                'university_department__university',
+                'university_department__department',
+                'research_group'
+            ).prefetch_related('labs', 'legacy_labs', 'headed_labs')
+        else:
+            # For full fields
+            return Professor.objects.select_related(
+                'university_department__university',
+                'university_department__department',
+                'research_group'
+            )
+
+    def get_serializer_class(self):
+        # Check for fields parameter to determine serializer
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            return ProfessorMinimalSerializer
+        return ProfessorSerializer
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):

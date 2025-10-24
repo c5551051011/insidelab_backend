@@ -98,6 +98,47 @@ class ResearchGroupSerializer(serializers.ModelSerializer):
         return obj.labs.count()
 
 
+class ProfessorMinimalSerializer(serializers.ModelSerializer):
+    labs = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Professor
+        fields = ['id', 'name', 'email', 'labs']
+
+    def get_labs(self, obj):
+        """Return labs associated with this professor"""
+        labs_data = []
+
+        # Get labs from the new professors ManyToMany relationship
+        try:
+            for lab in obj.labs.all():
+                labs_data.append({
+                    'id': lab.id,
+                    'name': lab.name
+                })
+        except:
+            pass
+
+        # Also check legacy labs and headed_labs
+        try:
+            for lab in obj.legacy_labs.all():
+                lab_data = {'id': lab.id, 'name': lab.name}
+                if lab_data not in labs_data:
+                    labs_data.append(lab_data)
+        except:
+            pass
+
+        try:
+            for lab in obj.headed_labs.all():
+                lab_data = {'id': lab.id, 'name': lab.name}
+                if lab_data not in labs_data:
+                    labs_data.append(lab_data)
+        except:
+            pass
+
+        return labs_data
+
+
 class ProfessorSerializer(serializers.ModelSerializer):
     university_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
