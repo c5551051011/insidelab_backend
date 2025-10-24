@@ -11,8 +11,8 @@ class Command(BaseCommand):
 
         # Admin credentials from environment variables
         admin_username = config('ADMIN_USERNAME', default='admin')
-        admin_email = config('ADMIN_EMAIL', default='admin@insidelab.io')
-        admin_password = config('ADMIN_PASSWORD', default='insidelab2024!')
+        admin_email = config('ADMIN_EMAIL', default='insidelab.25@gmail.com')
+        admin_password = config('ADMIN_PASSWORD', default='insidelab.25@gmail.com')
 
         # Check if admin user already exists
         if User.objects.filter(username=admin_username).exists():
