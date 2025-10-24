@@ -251,7 +251,7 @@ class ProfessorViewSet(viewsets.ModelViewSet):
         'research_group'
     )
     serializer_class = ProfessorSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['university_department__university', 'university_department__department', 'research_group']
     search_fields = ['name', 'research_interests']
