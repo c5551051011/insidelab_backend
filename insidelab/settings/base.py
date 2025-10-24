@@ -185,3 +185,15 @@ SITE_DOMAIN = config('SITE_DOMAIN', default='localhost:8000')
 
 # Login URL for Django admin and Swagger UI
 LOGIN_URL = '/admin/login/'
+
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    'https://insidelab.up.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# CSRF cookies configuration
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
+CSRF_COOKIE_SAMESITE = 'Lax'

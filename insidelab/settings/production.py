@@ -208,13 +208,16 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 
+# HTTPS and cookie security settings
+# Railway handles HTTPS termination, so we need secure cookies
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 # Only enable HTTPS redirect if not on Railway (Railway handles HTTPS)
 # Check if RAILWAY_ENVIRONMENT exists (Railway sets this automatically)
 railway_env = config('RAILWAY_ENVIRONMENT', default=None)
 if railway_env is None:
     SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
 
 X_FRAME_OPTIONS = 'DENY'
 
