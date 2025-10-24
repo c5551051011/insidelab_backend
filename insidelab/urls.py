@@ -84,6 +84,10 @@ Authorization: Bearer <access_token>
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Django built-in authentication URLs (for Swagger UI login)
+    path('accounts/', include('django.contrib.auth.urls')),
+
     path('api/v1/', include([
         path('auth/', include('apps.authentication.urls')),
         path('universities/', include('apps.universities.urls')),
