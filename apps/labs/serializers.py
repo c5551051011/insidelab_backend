@@ -34,7 +34,8 @@ class LabMinimalSerializer(serializers.ModelSerializer):
 
 class LabListSerializer(serializers.ModelSerializer):
     """Full fields for lab search/cards"""
-    professor_name = serializers.CharField(source='professor.name', read_only=True)
+    professor_names = serializers.SerializerMethodField()
+    head_professor_name = serializers.CharField(source='head_professor.name', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
     research_group_name = serializers.CharField(source='research_group.name', read_only=True)
     recruitment_status = RecruitmentStatusSerializer(read_only=True)
@@ -44,15 +45,29 @@ class LabListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lab
-        fields = ['id', 'name', 'professor', 'professor_name', 'university_name', 'department',
-                 'research_group_name', 'overall_rating', 'review_count',
+        fields = ['id', 'name', 'professors', 'head_professor', 'professor_names', 'head_professor_name',
+                 'university_name', 'department', 'research_group_name', 'overall_rating', 'review_count',
                  'research_areas', 'tags', 'recruitment_status', 'university_department',
-                 'university', 'description', 'website', 'lab_size']
+                 'university', 'description', 'website', 'lab_size',
+                 # Legacy field for backward compatibility
+                 'professor']
         extra_kwargs = {
-            'professor': {'write_only': True},
+            'professors': {'write_only': True},
+            'head_professor': {'write_only': True},
+            'professor': {'write_only': True},  # Legacy
             'university_department': {'write_only': True},
             'university': {'write_only': True},
         }
+
+    def get_professor_names(self, obj):
+        """Return list of all professor names"""
+        try:
+            return [prof.name for prof in obj.professors.all()]
+        except:
+            # Fallback to legacy professor field
+            if obj.professor:
+                return [obj.professor.name]
+            return []
 
     def get_department(self, obj):
         """Return the best available department name"""

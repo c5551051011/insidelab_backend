@@ -6,10 +6,30 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Lab(models.Model):
     name = models.CharField(max_length=300)
+    # Multiple professors can be in a lab
+    professors = models.ManyToManyField(
+        'universities.Professor',
+        related_name='labs',
+        blank=True,
+        help_text='All professors associated with this lab'
+    )
+    # Primary/Head professor for the lab
+    head_professor = models.ForeignKey(
+        'universities.Professor',
+        on_delete=models.SET_NULL,
+        related_name='headed_labs',
+        null=True,
+        blank=True,
+        help_text='Primary professor who heads this lab'
+    )
+    # Legacy field for backward compatibility
     professor = models.ForeignKey(
         'universities.Professor',
         on_delete=models.CASCADE,
-        related_name='labs'
+        related_name='legacy_labs',
+        null=True,
+        blank=True,
+        help_text='Legacy field - use head_professor and professors instead'
     )
     university_department = models.ForeignKey(
         'universities.UniversityDepartment',
@@ -61,28 +81,35 @@ class Lab(models.Model):
 
     def __str__(self):
         try:
-            professor_name = self.professor.name if self.professor else "No Professor"
+            if self.head_professor:
+                professor_name = self.head_professor.name
+            elif self.professor:  # Legacy fallback
+                professor_name = self.professor.name
+            else:
+                professor_name = "No Head Professor"
         except:
-            professor_name = "No Professor"
+            professor_name = "No Head Professor"
         return f"{self.name} - {professor_name}"
 
     def save(self, *args, **kwargs):
-        """Auto-populate university_department and research group from professor if not set"""
+        """Auto-populate university_department and research group from head professor if not set"""
         try:
-            # Check if professor is set and accessible
-            if self.professor_id and self.professor:
-                # Auto-populate university_department from professor
-                if not self.university_department and hasattr(self.professor, 'university_department'):
-                    self.university_department = self.professor.university_department
+            # Use head_professor for auto-population, fallback to legacy professor
+            primary_prof = self.head_professor or self.professor
 
-                # Auto-populate research group from professor
-                if not self.research_group and self.professor.research_group:
-                    self.research_group = self.professor.research_group
+            if primary_prof:
+                # Auto-populate university_department from primary professor
+                if not self.university_department and hasattr(primary_prof, 'university_department') and primary_prof.university_department:
+                    self.university_department = primary_prof.university_department
+
+                # Auto-populate research group from primary professor
+                if not self.research_group and hasattr(primary_prof, 'research_group') and primary_prof.research_group:
+                    self.research_group = primary_prof.research_group
 
                 # Update legacy fields for backward compatibility
-                if hasattr(self.professor, 'university_department') and self.professor.university_department:
-                    self.university = self.professor.university_department.university
-                    self.department = self.professor.university_department.display_name
+                if hasattr(primary_prof, 'university_department') and primary_prof.university_department:
+                    self.university = primary_prof.university_department.university
+                    self.department = primary_prof.university_department.display_name
         except (AttributeError, models.ObjectDoesNotExist):
             # Professor not set or not accessible, skip auto-population
             pass
