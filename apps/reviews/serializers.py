@@ -27,16 +27,22 @@ class ReviewSerializer(serializers.ModelSerializer):
     is_verified = serializers.BooleanField(read_only=True)
     category_ratings = serializers.SerializerMethodField()
     ratings_input = serializers.DictField(write_only=True, required=True)
+    professor_name = serializers.CharField(source='professor.name', read_only=True)
+    lab_name = serializers.CharField(source='lab.name', read_only=True)
 
     class Meta:
         model = Review
         fields = [
-            'id', 'lab', 'user', 'position', 'duration', 'rating',
+            'id', 'professor', 'professor_name', 'lab', 'lab_name', 'user', 'position', 'duration', 'rating',
             'category_ratings', 'ratings_input', 'review_text', 'pros', 'cons',
             'is_verified', 'helpful_count', 'created_at', 'updated_at',
             'user_position'
         ]
-        read_only_fields = ('user', 'helpful_count', 'is_verified', 'category_ratings')
+        read_only_fields = ('user', 'helpful_count', 'is_verified', 'category_ratings', 'professor_name', 'lab_name')
+        extra_kwargs = {
+            'professor': {'required': True},
+            'lab': {'required': False}
+        }
 
     def get_category_ratings(self, obj):
         """Return category ratings as a dictionary for API responses"""
@@ -88,6 +94,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate_cons(self, value):
         if len(value) > 5:
             raise serializers.ValidationError("Maximum 5 cons allowed")
+        return value
+
+    def validate_professor(self, value):
+        if value is None:
+            raise serializers.ValidationError("Professor is required")
         return value
 
 

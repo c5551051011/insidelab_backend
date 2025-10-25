@@ -43,10 +43,21 @@ class Review(models.Model):
         ('4+ years', '4+ years'),
     ]
     
+    professor = models.ForeignKey(
+        'universities.Professor',
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        null=True,
+        blank=True,
+        help_text='Professor this review is about (required)'
+    )
     lab = models.ForeignKey(
         'labs.Lab',
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        null=True,
+        blank=True,
+        help_text='Lab context for the review (optional)'
     )
     user = models.ForeignKey(
         User,
@@ -82,10 +93,11 @@ class Review(models.Model):
     class Meta:
         db_table = 'reviews'
         ordering = ['-helpful_count', '-created_at']
-        unique_together = ['lab', 'user']
+        unique_together = ['professor', 'user']
 
     def __str__(self):
-        return f"Review for {self.lab.name} by {self.user.email}"
+        lab_context = f" in {self.lab.name}" if self.lab else ""
+        return f"Review for {self.professor.name}{lab_context} by {self.user.email}"
 
     @property
     def category_ratings_dict(self):
