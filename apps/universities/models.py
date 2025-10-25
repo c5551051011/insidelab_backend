@@ -137,6 +137,14 @@ class Professor(models.Model):
         related_name='professors',
         help_text='Optional research group within the department'
     )
+    lab = models.ForeignKey(
+        'labs.Lab',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='professors',
+        help_text='Lab this professor belongs to'
+    )
     # Legacy fields for migration compatibility
     university = models.ForeignKey(
         University,

@@ -6,13 +6,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Lab(models.Model):
     name = models.CharField(max_length=300)
-    # Multiple professors can be in a lab
-    professors = models.ManyToManyField(
-        'universities.Professor',
-        related_name='labs',
-        blank=True,
-        help_text='All professors associated with this lab'
-    )
     # Primary/Head professor for the lab
     head_professor = models.ForeignKey(
         'universities.Professor',

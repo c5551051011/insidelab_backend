@@ -99,52 +99,82 @@ class ResearchGroupSerializer(serializers.ModelSerializer):
 
 
 class ProfessorMinimalSerializer(serializers.ModelSerializer):
-    labs = serializers.SerializerMethodField()
+    lab = serializers.SerializerMethodField()
 
     class Meta:
         model = Professor
-        fields = ['id', 'name', 'email', 'labs']
+        fields = ['id', 'name', 'email', 'lab']
 
-    def get_labs(self, obj):
-        """Return labs associated with this professor"""
-        labs_data = []
+    def get_lab(self, obj):
+        """Return lab this professor belongs to"""
+        if obj.lab:
+            return {
+                'id': obj.lab.id,
+                'name': obj.lab.name
+            }
 
-        # Get labs from the new professors ManyToMany relationship
+        # Fallback to legacy labs for backward compatibility
         try:
-            for lab in obj.labs.all():
-                labs_data.append({
+            if obj.legacy_labs.exists():
+                lab = obj.legacy_labs.first()
+                return {
                     'id': lab.id,
                     'name': lab.name
-                })
-        except:
-            pass
-
-        # Also check legacy labs and headed_labs
-        try:
-            for lab in obj.legacy_labs.all():
-                lab_data = {'id': lab.id, 'name': lab.name}
-                if lab_data not in labs_data:
-                    labs_data.append(lab_data)
+                }
         except:
             pass
 
         try:
-            for lab in obj.headed_labs.all():
-                lab_data = {'id': lab.id, 'name': lab.name}
-                if lab_data not in labs_data:
-                    labs_data.append(lab_data)
+            if obj.headed_labs.exists():
+                lab = obj.headed_labs.first()
+                return {
+                    'id': lab.id,
+                    'name': lab.name
+                }
         except:
             pass
 
-        return labs_data
+        return None
 
 
 class ProfessorSerializer(serializers.ModelSerializer):
     university_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
     research_group_name = serializers.CharField(source='research_group.name', read_only=True)
+    lab_info = serializers.SerializerMethodField()
 
     class Meta:
         model = Professor
         fields = '__all__'
+
+    def get_lab_info(self, obj):
+        """Return lab this professor belongs to"""
+        if obj.lab:
+            return {
+                'id': obj.lab.id,
+                'name': obj.lab.name
+            }
+
+        # Fallback to legacy labs for backward compatibility
+        try:
+            if obj.legacy_labs.exists():
+                lab = obj.legacy_labs.first()
+                return {
+                    'id': lab.id,
+                    'name': lab.name
+                }
+        except:
+            pass
+
+        try:
+            if obj.headed_labs.exists():
+                lab = obj.headed_labs.first()
+                return {
+                    'id': lab.id,
+                    'name': lab.name
+                }
+        except:
+            pass
+
+        return None
 

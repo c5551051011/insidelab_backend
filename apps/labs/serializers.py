@@ -61,13 +61,23 @@ class LabListSerializer(serializers.ModelSerializer):
 
     def get_professor_names(self, obj):
         """Return list of all professor names"""
+        professor_names = []
+
+        # Get professors from the new N:1 relationship
         try:
-            return [prof.name for prof in obj.professors.all()]
+            for prof in obj.professors.all():
+                professor_names.append(prof.name)
         except:
-            # Fallback to legacy professor field
-            if obj.professor:
-                return [obj.professor.name]
-            return []
+            pass
+
+        # Also check legacy professor field for backward compatibility
+        try:
+            if obj.professor and obj.professor.name not in professor_names:
+                professor_names.append(obj.professor.name)
+        except:
+            pass
+
+        return professor_names
 
     def get_department(self, obj):
         """Return the best available department name"""
