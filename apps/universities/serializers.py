@@ -107,31 +107,29 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
 
     def get_lab(self, obj):
         """Return lab this professor belongs to"""
-        if obj.lab:
-            return {
-                'id': obj.lab.id,
-                'name': obj.lab.name
-            }
-
-        # Fallback to legacy labs for backward compatibility
         try:
-            if obj.legacy_labs.exists():
+            if obj.lab:
+                return {
+                    'id': obj.lab.id,
+                    'name': obj.lab.name
+                }
+
+            # Fallback to legacy labs for backward compatibility
+            if hasattr(obj, 'legacy_labs') and obj.legacy_labs.exists():
                 lab = obj.legacy_labs.first()
                 return {
                     'id': lab.id,
                     'name': lab.name
                 }
-        except:
-            pass
 
-        try:
-            if obj.headed_labs.exists():
+            if hasattr(obj, 'headed_labs') and obj.headed_labs.exists():
                 lab = obj.headed_labs.first()
                 return {
                     'id': lab.id,
                     'name': lab.name
                 }
-        except:
+        except Exception as e:
+            # For debugging, you might want to log this error
             pass
 
         return None
