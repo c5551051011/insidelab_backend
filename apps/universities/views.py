@@ -257,19 +257,21 @@ class ProfessorViewSet(viewsets.ModelViewSet):
         fields = self.request.query_params.get('fields', 'full')
 
         if fields == 'minimal':
-            # For minimal fields, prefetch labs relationships
+            # For minimal fields, select lab and prefetch legacy relationships
             return Professor.objects.select_related(
                 'university_department__university',
                 'university_department__department',
-                'research_group'
-            ).prefetch_related('labs', 'legacy_labs', 'headed_labs')
+                'research_group',
+                'lab'
+            ).prefetch_related('legacy_labs', 'headed_labs')
         else:
             # For full fields
             return Professor.objects.select_related(
                 'university_department__university',
                 'university_department__department',
-                'research_group'
-            )
+                'research_group',
+                'lab'
+            ).prefetch_related('legacy_labs', 'headed_labs')
 
     def get_serializer_class(self):
         # Check for fields parameter to determine serializer
