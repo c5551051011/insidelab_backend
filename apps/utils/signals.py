@@ -74,7 +74,10 @@ def invalidate_user_cache(sender, instance, **kwargs):
     # Invalidate user profile cache
     cache_key = f"insidelab:1:USER_PROFILE:{instance.id}"
     cache.delete(cache_key)
-    print(f"Invalidated user cache for: {instance.email}")
+    # Only log in development/debug mode to reduce noise in production
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Invalidated user cache for: {instance.email}")
 
 
 # Bulk cache invalidation for admin actions
