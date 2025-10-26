@@ -160,6 +160,20 @@ class Professor(models.Model):
     personal_website = models.URLField(blank=True)
     research_interests = models.JSONField(default=list)
     bio = models.TextField(blank=True)
+
+    # Cached rating fields for performance
+    overall_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
+        help_text='Cached average rating from reviews'
+    )
+    review_count = models.IntegerField(
+        default=0,
+        help_text='Cached count of active reviews'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
