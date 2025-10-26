@@ -101,10 +101,18 @@ class ResearchGroupSerializer(serializers.ModelSerializer):
 
 class ProfessorMinimalSerializer(serializers.ModelSerializer):
     lab = serializers.SerializerMethodField()
+    overall_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+    research_areas = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
+    recruitment_status = serializers.SerializerMethodField()
+    university_name = serializers.CharField(source='university_department.university.name', read_only=True)
+    department_name = serializers.CharField(source='university_department.department.name', read_only=True)
+    research_group_name = serializers.CharField(source='research_group.name', read_only=True)
 
     class Meta:
         model = Professor
-        fields = ['id', 'name', 'email', 'lab']
+        fields = ['id', 'name', 'email', 'lab', 'overall_rating', 'review_count', 'research_areas', 'tags', 'recruitment_status', 'university_name', 'department_name', 'research_group_name']
 
     def get_lab(self, obj):
         """Return lab this professor belongs to"""
@@ -128,6 +136,53 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
             # For debugging, you might want to log this error
             pass
 
+        return None
+
+    def get_overall_rating(self, obj):
+        """Calculate overall rating from professor's reviews"""
+        from apps.reviews.models import Review
+        reviews = Review.objects.filter(professor=obj, status='active')
+        if reviews.exists():
+            avg_rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
+            return f"{avg_rating:.2f}" if avg_rating else "0.00"
+        return "0.00"
+
+    def get_review_count(self, obj):
+        """Count active reviews for this professor"""
+        from apps.reviews.models import Review
+        return Review.objects.filter(professor=obj, status='active').count()
+
+    def get_research_areas(self, obj):
+        """Return research areas - using research_interests field"""
+        return obj.research_interests or []
+
+    def get_tags(self, obj):
+        """Return tags from the professor's lab if they belong to one"""
+        try:
+            if obj.lab and hasattr(obj.lab, 'tags'):
+                return obj.lab.tags or []
+            # If professor heads a lab, use that lab's tags
+            if obj.headed_labs.exists():
+                lab = obj.headed_labs.first()
+                return lab.tags or []
+        except:
+            pass
+        return []
+
+    def get_recruitment_status(self, obj):
+        """Return recruitment status for this professor"""
+        try:
+            if hasattr(obj, 'recruitment_status'):
+                recruitment = obj.recruitment_status
+                return {
+                    'is_recruiting_phd': recruitment.is_recruiting_phd,
+                    'is_recruiting_postdoc': recruitment.is_recruiting_postdoc,
+                    'is_recruiting_intern': recruitment.is_recruiting_intern,
+                    'notes': recruitment.notes,
+                    'last_updated': recruitment.last_updated
+                }
+        except:
+            pass
         return None
 
 
