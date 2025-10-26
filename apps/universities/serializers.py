@@ -139,18 +139,12 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
         return None
 
     def get_overall_rating(self, obj):
-        """Calculate overall rating from professor's reviews"""
-        from apps.reviews.models import Review
-        reviews = Review.objects.filter(professor=obj, status='active')
-        if reviews.exists():
-            avg_rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
-            return f"{avg_rating:.2f}" if avg_rating else "0.00"
-        return "0.00"
+        """Return cached overall rating"""
+        return f"{obj.overall_rating:.2f}"
 
     def get_review_count(self, obj):
-        """Count active reviews for this professor"""
-        from apps.reviews.models import Review
-        return Review.objects.filter(professor=obj, status='active').count()
+        """Return cached review count"""
+        return obj.review_count
 
     def get_research_areas(self, obj):
         """Return research areas - using research_interests field"""
@@ -225,18 +219,12 @@ class ProfessorSerializer(serializers.ModelSerializer):
         return None
 
     def get_overall_rating(self, obj):
-        """Calculate overall rating from professor's reviews"""
-        from apps.reviews.models import Review
-        reviews = Review.objects.filter(professor=obj, status='active')
-        if reviews.exists():
-            avg_rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
-            return f"{avg_rating:.2f}" if avg_rating else "0.00"
-        return "0.00"
+        """Return cached overall rating"""
+        return f"{obj.overall_rating:.2f}"
 
     def get_review_count(self, obj):
-        """Count active reviews for this professor"""
-        from apps.reviews.models import Review
-        return Review.objects.filter(professor=obj, status='active').count()
+        """Return cached review count"""
+        return obj.review_count
 
     def get_research_areas(self, obj):
         """Return research areas - using research_interests field"""

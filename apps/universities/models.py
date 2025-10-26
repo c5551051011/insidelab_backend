@@ -184,6 +184,20 @@ class Professor(models.Model):
             return f"{self.name} - {self.research_group.name} - {self.university.name}"
         return f"{self.name} - {self.department} - {self.university.name}"
 
+    def update_rating(self):
+        """Recalculate overall rating based on reviews"""
+        from apps.reviews.models import Review
+        reviews = Review.objects.filter(professor=self, status='active')
+        if reviews.exists():
+            self.overall_rating = reviews.aggregate(
+                avg_rating=models.Avg('rating')
+            )['avg_rating']
+            self.review_count = reviews.count()
+        else:
+            self.overall_rating = 0
+            self.review_count = 0
+        self.save(update_fields=['overall_rating', 'review_count'])
+
 
 class UniversityEmailDomain(models.Model):
     """University email domains for verification"""
