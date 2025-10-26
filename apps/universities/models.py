@@ -160,6 +160,18 @@ class Professor(models.Model):
     personal_website = models.URLField(blank=True)
     research_interests = models.JSONField(default=list)
     bio = models.TextField(blank=True)
+    research_areas = models.JSONField(default=list)
+    tags = models.JSONField(default=list)
+
+    # Calculated fields
+    overall_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(5)]
+    )
+    review_count = models.IntegerField(default=0)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
