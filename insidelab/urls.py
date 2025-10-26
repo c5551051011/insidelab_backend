@@ -94,6 +94,14 @@ Authorization: Bearer <access_token>
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    # API Documentation (must be before api/v1/ to avoid conflicts)
+    path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/v1/swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('api/v1/swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
+    path('api/v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-docs'),
+
+    # API endpoints
     path('api/v1/', include([
         path('auth/', include('apps.authentication.urls')),
         path('universities/', include('apps.universities.urls')),
@@ -104,13 +112,6 @@ urlpatterns = [
         path('reviews/', include('apps.reviews.urls')),
         path('health/', health_check, name='health-check'),
     ])),
-
-    # API Documentation at root level (to see all /api/v1/ endpoints)
-    path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('api/v1/swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('api/v1/swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
-    path('api/v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-docs'),
 
     # Root level documentation (for convenience)
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-root'),
