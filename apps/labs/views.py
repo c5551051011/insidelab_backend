@@ -23,8 +23,8 @@ class LabViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = LabFilter
-    search_fields = ['name', 'professor__name', 'university__name', 'research_areas']
-    ordering_fields = ['overall_rating', 'review_count', 'created_at', 'name', 'professor__name', 'university__name', 'lab_size']
+    search_fields = ['name', 'head_professor__name', 'university__name', 'research_areas']
+    ordering_fields = ['overall_rating', 'review_count', 'created_at', 'name', 'head_professor__name', 'university__name', 'lab_size']
     ordering = ['-overall_rating', '-review_count']
     
     def get_queryset(self):
@@ -32,12 +32,12 @@ class LabViewSet(viewsets.ModelViewSet):
         fields = self.request.query_params.get('fields', 'full')
 
         if fields == 'minimal':
-            # For minimal fields, only need professor name
-            queryset = Lab.objects.select_related('professor')
+            # For minimal fields, only need head professor name
+            queryset = Lab.objects.select_related('head_professor')
         elif self.action == 'retrieve':
             # For detail view, prefetch all related data
             queryset = Lab.objects.select_related(
-                'professor',
+                'head_professor',
                 'university',
                 'university_department__university',
                 'university_department__department',
@@ -45,17 +45,18 @@ class LabViewSet(viewsets.ModelViewSet):
             ).prefetch_related(
                 'research_topics',
                 'recent_publications',
-                'recruitment_status'
+                'recruitment_status',
+                'professors'  # Reverse relationship from Professor.lab
             )
         else:
             # For full list view, select related fields needed for list serializer
             queryset = Lab.objects.select_related(
-                'professor',
+                'head_professor',
                 'university',
                 'university_department__university',
                 'university_department__department',
                 'research_group'
-            ).prefetch_related('recruitment_status')
+            ).prefetch_related('recruitment_status', 'professors')
 
         return queryset
     

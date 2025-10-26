@@ -114,14 +114,7 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
                     'name': obj.lab.name
                 }
 
-            # Fallback to legacy labs for backward compatibility
-            if hasattr(obj, 'legacy_labs') and obj.legacy_labs.exists():
-                lab = obj.legacy_labs.first()
-                return {
-                    'id': lab.id,
-                    'name': lab.name
-                }
-
+            # Fallback to headed_labs if professor is head of a lab
             if hasattr(obj, 'headed_labs') and obj.headed_labs.exists():
                 lab = obj.headed_labs.first()
                 return {
@@ -153,17 +146,7 @@ class ProfessorSerializer(serializers.ModelSerializer):
                 'name': obj.lab.name
             }
 
-        # Fallback to legacy labs for backward compatibility
-        try:
-            if obj.legacy_labs.exists():
-                lab = obj.legacy_labs.first()
-                return {
-                    'id': lab.id,
-                    'name': lab.name
-                }
-        except:
-            pass
-
+        # Fallback to headed_labs if professor is head of a lab
         try:
             if obj.headed_labs.exists():
                 lab = obj.headed_labs.first()

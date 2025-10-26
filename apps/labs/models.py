@@ -15,15 +15,6 @@ class Lab(models.Model):
         blank=True,
         help_text='Primary professor who heads this lab'
     )
-    # Legacy field for backward compatibility
-    professor = models.ForeignKey(
-        'universities.Professor',
-        on_delete=models.CASCADE,
-        related_name='legacy_labs',
-        null=True,
-        blank=True,
-        help_text='Legacy field - use head_professor and professors instead'
-    )
     university_department = models.ForeignKey(
         'universities.UniversityDepartment',
         on_delete=models.CASCADE,
@@ -76,8 +67,6 @@ class Lab(models.Model):
         try:
             if self.head_professor:
                 professor_name = self.head_professor.name
-            elif self.professor:  # Legacy fallback
-                professor_name = self.professor.name
             else:
                 professor_name = "No Head Professor"
         except:
@@ -87,8 +76,8 @@ class Lab(models.Model):
     def save(self, *args, **kwargs):
         """Auto-populate university_department and research group from head professor if not set"""
         try:
-            # Use head_professor for auto-population, fallback to legacy professor
-            primary_prof = self.head_professor or self.professor
+            # Use head_professor for auto-population
+            primary_prof = self.head_professor
 
             if primary_prof:
                 # Auto-populate university_department from primary professor

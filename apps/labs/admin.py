@@ -17,15 +17,15 @@ class RecruitmentStatusInline(admin.StackedInline):
 
 @admin.register(Lab)
 class LabAdmin(admin.ModelAdmin):
-    list_display = ['name', 'professor', 'university', 'overall_rating', 'review_count']
+    list_display = ['name', 'head_professor', 'university', 'overall_rating', 'review_count']
     list_filter = ['university', 'department', 'overall_rating']
-    search_fields = ['name', 'professor__name', 'university__name']
+    search_fields = ['name', 'head_professor__name', 'university__name']
     readonly_fields = ['overall_rating', 'review_count', 'created_at', 'updated_at']
     inlines = [RecruitmentStatusInline, ResearchTopicInline, PublicationInline]
-    
+
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'professor', 'university', 'department')
+            'fields': ('name', 'head_professor', 'university_department', 'research_group')
         }),
         ('Details', {
             'fields': ('description', 'website', 'lab_size', 'research_areas', 'tags')

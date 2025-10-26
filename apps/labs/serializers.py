@@ -45,16 +45,12 @@ class LabListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lab
-        fields = ['id', 'name', 'professors', 'head_professor', 'professor_names', 'head_professor_name',
+        fields = ['id', 'name', 'head_professor', 'professor_names', 'head_professor_name',
                  'university_name', 'department', 'research_group_name', 'overall_rating', 'review_count',
                  'research_areas', 'tags', 'recruitment_status', 'university_department',
-                 'university', 'description', 'website', 'lab_size',
-                 # Legacy field for backward compatibility
-                 'professor']
+                 'university', 'description', 'website', 'lab_size']
         extra_kwargs = {
-            'professors': {'write_only': True},
             'head_professor': {'write_only': True},
-            'professor': {'write_only': True},  # Legacy
             'university_department': {'write_only': True},
             'university': {'write_only': True},
         }
@@ -63,17 +59,10 @@ class LabListSerializer(serializers.ModelSerializer):
         """Return list of all professor names"""
         professor_names = []
 
-        # Get professors from the new N:1 relationship
+        # Get professors from the N:1 relationship (professors.filter(lab=obj))
         try:
             for prof in obj.professors.all():
                 professor_names.append(prof.name)
-        except:
-            pass
-
-        # Also check legacy professor field for backward compatibility
-        try:
-            if obj.professor and obj.professor.name not in professor_names:
-                professor_names.append(obj.professor.name)
         except:
             pass
 
@@ -89,7 +78,7 @@ class LabListSerializer(serializers.ModelSerializer):
 
 
 class LabDetailSerializer(serializers.ModelSerializer):
-    professor = ProfessorSerializer(read_only=True)
+    head_professor = ProfessorSerializer(read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
     university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
