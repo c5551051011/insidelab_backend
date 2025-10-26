@@ -263,7 +263,7 @@ class ProfessorViewSet(viewsets.ModelViewSet):
                 'university_department__department',
                 'research_group',
                 'lab'
-            ).prefetch_related('legacy_labs', 'headed_labs')
+            ).prefetch_related('headed_labs')
         else:
             # For full fields
             return Professor.objects.select_related(
@@ -271,7 +271,7 @@ class ProfessorViewSet(viewsets.ModelViewSet):
                 'university_department__department',
                 'research_group',
                 'lab'
-            ).prefetch_related('legacy_labs', 'headed_labs')
+            ).prefetch_related('headed_labs')
 
     def get_serializer_class(self):
         # Check for fields parameter to determine serializer
