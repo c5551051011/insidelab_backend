@@ -51,8 +51,11 @@ def cache_response(cache_type, timeout=None, vary_on_user=False):
             # Try to get from cache
             cached_data = cache.get(cache_key)
             if cached_data is not None:
+                print(f"🎯 Cache HIT for key: {cache_key}")
                 from rest_framework.response import Response
                 return Response(cached_data)
+            else:
+                print(f"❌ Cache MISS for key: {cache_key}")
 
             # Get fresh response
             response = view_func(self, request, *args, **kwargs)
@@ -63,8 +66,10 @@ def cache_response(cache_type, timeout=None, vary_on_user=False):
                     # Ensure response is rendered before caching data
                     response.render()
                     cache.set(cache_key, response.data, cache_timeout)
+                    print(f"✅ Cache SET for key: {cache_key}, timeout: {cache_timeout}s")
                 except Exception as e:
                     # If caching fails, just return the response without caching
+                    print(f"❌ Cache SET failed for key: {cache_key}, error: {e}")
                     pass
 
             return response
