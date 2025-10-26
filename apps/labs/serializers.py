@@ -79,6 +79,7 @@ class LabListSerializer(serializers.ModelSerializer):
 
 class LabDetailSerializer(serializers.ModelSerializer):
     head_professor = ProfessorSerializer(read_only=True)
+    head_professor_name = serializers.CharField(source='head_professor.name', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
     university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
