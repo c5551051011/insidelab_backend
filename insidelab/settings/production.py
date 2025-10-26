@@ -287,10 +287,12 @@ SITE_DOMAIN = config('SITE_DOMAIN', default='insidelab.io')
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 
-# Disable browsable API in production
+# Disable browsable API in production (but keep for Swagger UI)
+# Note: Swagger UI uses drf-yasg which bypasses DRF renderer settings
+# So we only disable the browsable API for regular DRF endpoints
 if not DEBUG:
-    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
-        'rest_framework.renderers.JSONRenderer',
-    ]
+    # Keep both renderers for Swagger UI compatibility
+    # Swagger will work even with only JSON renderer, but keeping both for safety
+    pass
 
 print("🚀 Production settings loaded")

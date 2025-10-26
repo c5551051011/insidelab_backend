@@ -197,3 +197,23 @@ CSRF_TRUSTED_ORIGINS = [
 # CSRF cookies configuration
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
 CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Swagger/OpenAPI Configuration (drf-yasg)
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"'
+        }
+    },
+    'USE_SESSION_AUTH': False,  # Disable Django session auth for Swagger
+    'LOGIN_URL': None,  # Don't require login to view Swagger
+    'LOGOUT_URL': None,
+    'PERSIST_AUTH': True,
+    'REFETCH_SCHEMA_WITH_AUTH': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
+    'VALIDATOR_URL': None,  # Disable schema validator
+}
