@@ -17,19 +17,19 @@ class Command(BaseCommand):
             admin_email = config('ADMIN_EMAIL', default='insidelab.25@gmail.com')
             admin_password = config('ADMIN_PASSWORD', default='insidelab.25@gmail.com')
 
-            self.stdout.write('🔍 Checking for existing admin user...')
-            print('🔍 Checking for existing admin user...', file=sys.stderr)
+            self.stdout.write(f'🔍 [SIGNAL] Checking for admin user "{admin_username}"...')
+            print(f'🔍 [SIGNAL] Checking for admin user "{admin_username}"...', file=sys.stderr)
 
-            # Check if admin user already exists
-            if User.objects.filter(username=admin_username).exists():
-                message = f'⚠️  Admin user "{admin_username}" already exists.'
+            # Check if admin user already exists (by username or email)
+            if User.objects.filter(username=admin_username).exists() or User.objects.filter(email=admin_email).exists():
+                message = f'⚠️ [SIGNAL] Admin user "{admin_username}" or email "{admin_email}" already exists.'
                 self.stdout.write(self.style.WARNING(message))
                 print(message, file=sys.stderr)
                 return
 
             # Create admin user
-            self.stdout.write('🚀 Creating new admin user...')
-            print('🚀 Creating new admin user...', file=sys.stderr)
+            self.stdout.write('🚀 [SIGNAL] Creating admin user...')
+            print('🚀 [SIGNAL] Creating admin user...', file=sys.stderr)
 
             admin_user = User.objects.create_superuser(
                 username=admin_username,
@@ -46,7 +46,8 @@ class Command(BaseCommand):
             print(credentials, file=sys.stderr)
 
         except Exception as e:
-            error_message = f'❌ Error creating admin user: {e}'
+            error_message = f'❌ [SIGNAL] Error creating admin user: {e}'
             self.stdout.write(self.style.ERROR(error_message))
             print(error_message, file=sys.stderr)
-            raise
+            # Don't raise exception in production to avoid crashing the app
+            pass
