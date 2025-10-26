@@ -49,16 +49,23 @@ def cache_response(cache_type, timeout=None, vary_on_user=False):
             cache_key = get_cache_key(*key_parts)
 
             # Try to get from cache
-            cached_response = cache.get(cache_key)
-            if cached_response is not None:
-                return cached_response
+            cached_data = cache.get(cache_key)
+            if cached_data is not None:
+                from rest_framework.response import Response
+                return Response(cached_data)
 
             # Get fresh response
             response = view_func(self, request, *args, **kwargs)
 
-            # Cache successful responses
+            # Cache successful responses (cache the data, not the Response object)
             if hasattr(response, 'status_code') and response.status_code == 200:
-                cache.set(cache_key, response, cache_timeout)
+                try:
+                    # Ensure response is rendered before caching data
+                    response.render()
+                    cache.set(cache_key, response.data, cache_timeout)
+                except Exception as e:
+                    # If caching fails, just return the response without caching
+                    pass
 
             return response
         return wrapper
