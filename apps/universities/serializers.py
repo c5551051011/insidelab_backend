@@ -112,7 +112,8 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
             if obj.lab:
                 return {
                     'id': obj.lab.id,
-                    'name': obj.lab.name
+                    'name': obj.lab.name,
+                    'website': obj.lab.website
                 }
 
             # Fallback to headed_labs if professor is head of a lab
@@ -120,7 +121,8 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
                 lab = obj.headed_labs.first()
                 return {
                     'id': lab.id,
-                    'name': lab.name
+                    'name': lab.name,
+                    'website': lab.website
                 }
         except Exception as e:
             # For debugging, you might want to log this error
@@ -149,7 +151,8 @@ class ProfessorSerializer(serializers.ModelSerializer):
         if obj.lab:
             return {
                 'id': obj.lab.id,
-                'name': obj.lab.name
+                'name': obj.lab.name,
+                'website': obj.lab.website
             }
 
         # Fallback to headed_labs if professor is head of a lab
@@ -158,7 +161,8 @@ class ProfessorSerializer(serializers.ModelSerializer):
                 lab = obj.headed_labs.first()
                 return {
                     'id': lab.id,
-                    'name': lab.name
+                    'name': lab.name,
+                    'website': lab.website
                 }
         except:
             pass
