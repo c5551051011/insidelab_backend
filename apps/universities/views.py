@@ -21,6 +21,11 @@ class UniversityViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name', 'ranking']
     ordering = ['name']
 
+    @cache_response('UNIVERSITIES', timeout=60*60*24)  # Cache for 24 hours
+    def list(self, request, *args, **kwargs):
+        """Override list to add caching for university list"""
+        return super().list(request, *args, **kwargs)
+
     def get_serializer_class(self):
         # Check for fields parameter to determine serializer
         fields = self.request.query_params.get('fields', 'full')
