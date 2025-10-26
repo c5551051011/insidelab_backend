@@ -63,10 +63,12 @@ def cache_response(cache_type, timeout=None, vary_on_user=False):
             # Cache successful responses (cache the data, not the Response object)
             if hasattr(response, 'status_code') and response.status_code == 200:
                 try:
-                    # Ensure response is rendered before caching data
-                    response.render()
-                    cache.set(cache_key, response.data, cache_timeout)
-                    print(f"✅ Cache SET for key: {cache_key}, timeout: {cache_timeout}s")
+                    # Only cache the data, not the rendered response
+                    if hasattr(response, 'data'):
+                        cache.set(cache_key, response.data, cache_timeout)
+                        print(f"✅ Cache SET for key: {cache_key}, timeout: {cache_timeout}s")
+                    else:
+                        print(f"❌ Response has no data attribute: {cache_key}")
                 except Exception as e:
                     # If caching fails, just return the response without caching
                     print(f"❌ Cache SET failed for key: {cache_key}, error: {e}")
