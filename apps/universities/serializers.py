@@ -244,10 +244,11 @@ class ProfessorSerializer(serializers.ModelSerializer):
         return []
 
     def get_recruitment_status(self, obj):
-        """Return recruitment status for this professor"""
+        """Return recruitment status from professor's lab if available"""
         try:
-            if hasattr(obj, 'recruitment_status'):
-                recruitment = obj.recruitment_status
+            # Check if professor has a lab and that lab has recruitment status
+            if obj.lab and hasattr(obj.lab, 'recruitment_status'):
+                recruitment = obj.lab.recruitment_status
                 return {
                     'is_recruiting_phd': recruitment.is_recruiting_phd,
                     'is_recruiting_postdoc': recruitment.is_recruiting_postdoc,
@@ -255,6 +256,18 @@ class ProfessorSerializer(serializers.ModelSerializer):
                     'notes': recruitment.notes,
                     'last_updated': recruitment.last_updated
                 }
+            # If professor heads a lab, use that lab's recruitment status
+            if obj.headed_labs.exists():
+                lab = obj.headed_labs.first()
+                if hasattr(lab, 'recruitment_status'):
+                    recruitment = lab.recruitment_status
+                    return {
+                        'is_recruiting_phd': recruitment.is_recruiting_phd,
+                        'is_recruiting_postdoc': recruitment.is_recruiting_postdoc,
+                        'is_recruiting_intern': recruitment.is_recruiting_intern,
+                        'notes': recruitment.notes,
+                        'last_updated': recruitment.last_updated
+                    }
         except:
             pass
         return None

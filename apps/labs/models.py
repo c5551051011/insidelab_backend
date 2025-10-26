@@ -147,8 +147,8 @@ class Publication(models.Model):
 
 
 class RecruitmentStatus(models.Model):
-    professor = models.OneToOneField(
-        'universities.Professor',
+    lab = models.OneToOneField(
+        Lab,
         on_delete=models.CASCADE,
         related_name='recruitment_status'
     )
