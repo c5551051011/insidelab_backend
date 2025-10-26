@@ -83,6 +83,7 @@ class LabDetailSerializer(serializers.ModelSerializer):
     university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
     department_local_name = serializers.CharField(source='university_department.local_name', read_only=True)
+    research_group_name = serializers.CharField(source='research_group.name', read_only=True)
     research_topics = ResearchTopicSerializer(many=True, read_only=True)
     recent_publications = PublicationSerializer(many=True, read_only=True)
     recruitment_status = RecruitmentStatusSerializer(read_only=True)
