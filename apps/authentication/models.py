@@ -35,6 +35,7 @@ class User(AbstractUser):
     # Legacy department field - will be populated from university_department for backward compatibility
     department = models.CharField(max_length=200, blank=True)
     lab_name = models.CharField(max_length=300, blank=True)
+
     
     # Verification and status
     is_verified = models.BooleanField(default=False)
@@ -158,5 +159,43 @@ class UserLabInterest(models.Model):
 
     def __str__(self):
         return f"{self.user.display_name} interested in {self.lab.name}"
+
+
+class UserResearchProfile(models.Model):
+    """User's research interests and specialties"""
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='research_profile'
+    )
+    primary_research_area = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text='Main research area (e.g., Machine Learning, Computer Vision)'
+    )
+    specialties_interests = models.JSONField(
+        default=list,
+        help_text='List of specific specialties and interests'
+    )
+    research_keywords = models.JSONField(
+        default=list,
+        help_text='Keywords related to research interests'
+    )
+    academic_background = models.TextField(
+        blank=True,
+        help_text='Brief academic background or experience'
+    )
+    research_goals = models.TextField(
+        blank=True,
+        help_text='Research goals or career objectives'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_research_profiles'
+
+    def __str__(self):
+        return f"Research profile for {self.user.display_name}"
 
 

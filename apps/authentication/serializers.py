@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 import secrets
-from .models import UserLabInterest
+from .models import UserLabInterest, UserResearchProfile
 
 User = get_user_model()
 
@@ -12,17 +12,18 @@ class UserSerializer(serializers.ModelSerializer):
     university_name = serializers.CharField(source='university.name', read_only=True)
     university_department_name = serializers.CharField(source='university_department.university.name', read_only=True)
     department_name = serializers.CharField(source='university_department.department.name', read_only=True)
+    research_profile = UserResearchProfileSerializer(read_only=True)
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'name', 'university', 'university_name',
                  'university_department', 'university_department_name', 'department_name',
-                 'position', 'department', 'lab_name', 'is_verified', 'verification_status',
+                 'position', 'department', 'lab_name', 'research_profile', 'is_verified', 'verification_status',
                  'is_lab_member', 'can_provide_services', 'review_count', 'helpful_votes',
                  'language', 'joined_date', 'created_at')
         read_only_fields = ('is_verified', 'verification_status', 'joined_date', 'created_at',
                            'review_count', 'helpful_votes', 'university_name', 'university_department_name',
-                           'department_name')
+                           'department_name', 'research_profile')
         extra_kwargs = {
             'university': {'write_only': True},
             'university_department': {'write_only': True}
@@ -102,3 +103,20 @@ class UserLabInterestCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You already have an interest recorded for this lab.")
 
         return attrs
+
+
+class UserResearchProfileSerializer(serializers.ModelSerializer):
+    """Serializer for user research profile"""
+
+    class Meta:
+        model = UserResearchProfile
+        fields = [
+            'id', 'primary_research_area', 'specialties_interests', 'research_keywords',
+            'academic_background', 'research_goals', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        # Auto-assign the current user
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
