@@ -7,6 +7,24 @@ from .models import UserLabInterest, UserResearchProfile
 
 User = get_user_model()
 
+
+class UserResearchProfileSerializer(serializers.ModelSerializer):
+    """Serializer for user research profile"""
+
+    class Meta:
+        model = UserResearchProfile
+        fields = [
+            'id', 'primary_research_area', 'specialties_interests', 'research_keywords',
+            'academic_background', 'research_goals', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        # Auto-assign the current user
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+
 class UserSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(source='joined_date', read_only=True)
     university_name = serializers.CharField(source='university.name', read_only=True)
@@ -103,20 +121,3 @@ class UserLabInterestCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You already have an interest recorded for this lab.")
 
         return attrs
-
-
-class UserResearchProfileSerializer(serializers.ModelSerializer):
-    """Serializer for user research profile"""
-
-    class Meta:
-        model = UserResearchProfile
-        fields = [
-            'id', 'primary_research_area', 'specialties_interests', 'research_keywords',
-            'academic_background', 'research_goals', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
-
-    def create(self, validated_data):
-        # Auto-assign the current user
-        validated_data['user'] = self.context['request'].user
-        return super().create(validated_data)
