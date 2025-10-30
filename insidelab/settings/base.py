@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'apps.labs',
     'apps.publications',
     'apps.reviews',
-    'apps.sessions',
     'apps.universities',
     'apps.utils',
 ]
