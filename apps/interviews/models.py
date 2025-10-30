@@ -6,6 +6,21 @@ from django.core.validators import MinValueValidator
 User = get_user_model()
 
 
+class ResearchArea(models.Model):
+    """Research areas for interview matching"""
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'research_areas'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class MockInterviewSession(models.Model):
     """Mock interview session booking model"""
 
@@ -43,9 +58,18 @@ class MockInterviewSession(models.Model):
         default='mock_interview'
     )
 
+    # Research area for matching
+    research_area = models.ForeignKey(
+        ResearchArea,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text='Primary research area for interviewer matching'
+    )
+
     focus_areas = models.TextField(
         blank=True,
-        help_text='Areas of focus or topics to cover'
+        help_text='Specific focus areas or topics to cover in the interview'
     )
 
     additional_notes = models.TextField(
