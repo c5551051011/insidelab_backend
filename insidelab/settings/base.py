@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'apps.labs',
     'apps.publications',
     'apps.reviews',
+    'apps.sessions.apps.SessionsConfig',
     'apps.universities',
     'apps.utils',
 ]
