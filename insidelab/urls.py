@@ -102,6 +102,9 @@ urlpatterns = [
     path('api/v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-docs'),
 
+    # Health check endpoint
+    path('api/v1/health/', health_check, name='health-check'),
+
     # API endpoints
     path('api/v1/', include([
         path('auth/', include('apps.authentication.urls')),
@@ -112,7 +115,6 @@ urlpatterns = [
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
         path('interviews/', include('apps.interviews.urls')),
-        path('health/', health_check, name='health-check'),
     ])),
 
     # Root level documentation (for convenience)
