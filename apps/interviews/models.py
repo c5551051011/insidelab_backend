@@ -104,7 +104,7 @@ class MockInterviewSession(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'mock_interview_sessions'
+        db_table = 'interview_sessions'
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['user', 'status']),
