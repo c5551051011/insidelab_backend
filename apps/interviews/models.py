@@ -14,7 +14,7 @@ class ResearchArea(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'research_areas'
+        db_table = 'interview_research_areas'
         ordering = ['name']
 
     def __str__(self):

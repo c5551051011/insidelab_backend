@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'research_areas',
+                'db_table': 'interview_research_areas',
                 'ordering': ['name'],
             },
         ),
