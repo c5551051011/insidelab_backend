@@ -88,6 +88,7 @@ Authorization: Bearer <access_token>
         path('labs/', include('apps.labs.urls')),
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
+        path('sessions/', include('apps.sessions.urls')),
     ]))],
 )
 
@@ -110,6 +111,7 @@ urlpatterns = [
         path('labs/', include('apps.labs.urls')),
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
+        path('sessions/', include('apps.sessions.urls')),
         path('health/', health_check, name='health-check'),
     ])),
 
