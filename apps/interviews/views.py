@@ -4,7 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.shortcuts import get_object_or_404
-from .models import ResearchArea, MockInterviewSession
+from .models import MockInterviewSession
+from apps.publications.models import ResearchArea
 from .serializers import (
     ResearchAreaSerializer,
     MockInterviewSessionListSerializer,
@@ -17,7 +18,7 @@ from .serializers import (
 
 class ResearchAreaViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for research areas"""
-    queryset = ResearchArea.objects.filter(is_active=True)
+    queryset = ResearchArea.objects.all()
     serializer_class = ResearchAreaSerializer
     permission_classes = [AllowAny]
 

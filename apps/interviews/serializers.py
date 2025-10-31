@@ -1,8 +1,9 @@
 # apps/interviews/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import ResearchArea, MockInterviewSession, SessionLab, SessionTimeSlot
+from .models import MockInterviewSession, SessionLab, SessionTimeSlot
 from apps.labs.models import Lab
+from apps.publications.models import ResearchArea
 
 User = get_user_model()
 
@@ -12,7 +13,7 @@ class ResearchAreaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ResearchArea
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'parent', 'color_code']
 
 
 class SessionTimeSlotSerializer(serializers.ModelSerializer):

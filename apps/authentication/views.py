@@ -12,9 +12,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import (
     UserSerializer, RegisterSerializer, UserLabInterestSerializer,
-    UserLabInterestCreateSerializer
+    UserLabInterestCreateSerializer, UserResearchProfileSerializer
 )
-from .models import UserLabInterest
+from .models import UserLabInterest, UserResearchProfile
 from .utils import send_verification_email, verify_email_token
 from .utils import resend_verification_email as resend_email_util
 from .utils import send_feedback_email
@@ -679,3 +679,25 @@ def send_feedback(request):
             'error': 'An error occurred while sending feedback',
             'success': False
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserResearchProfileViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing user research profiles"""
+    serializer_class = UserResearchProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return the current user's research profile
+        return UserResearchProfile.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Ensure only one profile per user
+        existing_profile = UserResearchProfile.objects.filter(user=self.request.user).first()
+        if existing_profile:
+            # Update existing profile instead of creating new one
+            for attr, value in serializer.validated_data.items():
+                setattr(existing_profile, attr, value)
+            existing_profile.save()
+            serializer.instance = existing_profile
+        else:
+            serializer.save(user=self.request.user)
