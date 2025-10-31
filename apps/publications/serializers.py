@@ -11,11 +11,12 @@ class ResearchAreaSerializer(serializers.ModelSerializer):
     """연구 분야 시리얼라이저"""
     full_path = serializers.ReadOnlyField()
     children_count = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source='department.name', read_only=True)
 
     class Meta:
         model = ResearchArea
         fields = [
-            'id', 'name', 'parent', 'description', 'color_code',
+            'id', 'name', 'department', 'department_name', 'parent', 'description', 'color_code',
             'full_path', 'children_count', 'created_at'
         ]
 

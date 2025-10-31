@@ -3,18 +3,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import MockInterviewSession, SessionLab, SessionTimeSlot
 from apps.labs.models import Lab
-from apps.publications.models import ResearchArea
 
 User = get_user_model()
-
-
-class ResearchAreaSerializer(serializers.ModelSerializer):
-    """Serializer for research areas"""
-    department_name = serializers.CharField(source='department.name', read_only=True)
-
-    class Meta:
-        model = ResearchArea
-        fields = ['id', 'name', 'description', 'department', 'department_name', 'parent', 'color_code']
 
 
 class SessionTimeSlotSerializer(serializers.ModelSerializer):

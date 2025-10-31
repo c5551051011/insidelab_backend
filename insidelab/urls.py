@@ -115,6 +115,8 @@ urlpatterns = [
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
         path('interviews/', include('apps.interviews.urls')),
+        # Unified research areas endpoint
+        path('research-areas/', include('apps.publications.research_areas_urls'))
     ])),
 
     # Root level documentation (for convenience)

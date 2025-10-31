@@ -861,13 +861,23 @@ class VenueViewSet(viewsets.ModelViewSet):
 # @method_decorator(cache_page(60 * 60 * 24), name='retrieve')  # Cache detail for 24 hours
 class ResearchAreaViewSet(viewsets.ModelViewSet):
     """연구 분야 관리 ViewSet"""
-    queryset = ResearchArea.objects.all()
     serializer_class = ResearchAreaSerializer
     permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
-    ordering = ['name']
+    ordering = ['department__name', 'name']
+
+    def get_queryset(self):
+        """Filter research areas by department if specified"""
+        queryset = ResearchArea.objects.select_related('department').filter(department__isnull=False)
+
+        # Filter by department if specified
+        department_id = self.request.query_params.get('department', None)
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
+
+        return queryset
 
     @cache_response('RESEARCH_AREAS', timeout=60*60*6)
     @action(detail=False, methods=['get'])
