@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('universities', '0004_alter_universitydepartment_unique_together'),
+        ('universities', '0007_merge_20251030_1034'),
         ('publications', '0005_populate_venue_tiers'),
     ]
 

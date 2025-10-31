@@ -183,7 +183,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('publications', '0006_add_department_to_research_area'),
-        ('universities', '0004_alter_universitydepartment_unique_together'),
+        ('universities', '0007_merge_20251030_1034'),
     ]
 
     operations = [
