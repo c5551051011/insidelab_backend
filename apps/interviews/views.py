@@ -18,9 +18,19 @@ from .serializers import (
 
 class ResearchAreaViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for research areas"""
-    queryset = ResearchArea.objects.all()
     serializer_class = ResearchAreaSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        """Filter research areas by department if specified"""
+        queryset = ResearchArea.objects.select_related('department').filter(department__isnull=False)
+
+        # Filter by department if specified
+        department_id = self.request.query_params.get('department', None)
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
+
+        return queryset.order_by('department__name', 'name')
 
 
 class InterviewViewSet(viewsets.ModelViewSet):

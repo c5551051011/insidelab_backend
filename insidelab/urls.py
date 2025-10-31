@@ -115,6 +115,7 @@ urlpatterns = [
         path('publications/', include('apps.publications.urls')),
         path('reviews/', include('apps.reviews.urls')),
         path('interviews/', include('apps.interviews.urls')),
+        path('sessions/', include('apps.interviews.urls')),  # Alias for interviews
     ])),
 
     # Root level documentation (for convenience)

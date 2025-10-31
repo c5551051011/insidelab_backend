@@ -7,7 +7,15 @@ import json
 
 class ResearchArea(models.Model):
     """연구 분야 (계층적 구조)"""
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    department = models.ForeignKey(
+        'universities.Department',
+        on_delete=models.CASCADE,
+        related_name='research_areas',
+        null=True,
+        blank=True,
+        help_text='Department this research area belongs to'
+    )
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='children')
     description = models.TextField(blank=True)
     color_code = models.CharField(max_length=7, default='#3498db')  # hex color
@@ -16,7 +24,8 @@ class ResearchArea(models.Model):
 
     class Meta:
         db_table = 'research_areas'
-        ordering = ['name']
+        ordering = ['department__name', 'name']
+        unique_together = ['name', 'department']
 
     def __str__(self):
         return self.name

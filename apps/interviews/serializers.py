@@ -10,10 +10,11 @@ User = get_user_model()
 
 class ResearchAreaSerializer(serializers.ModelSerializer):
     """Serializer for research areas"""
+    department_name = serializers.CharField(source='department.name', read_only=True)
 
     class Meta:
         model = ResearchArea
-        fields = ['id', 'name', 'description', 'parent', 'color_code']
+        fields = ['id', 'name', 'description', 'department', 'department_name', 'parent', 'color_code']
 
 
 class SessionTimeSlotSerializer(serializers.ModelSerializer):
