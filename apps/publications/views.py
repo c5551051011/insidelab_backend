@@ -17,7 +17,7 @@ from .models import (
 )
 from .serializers import (
     PublicationMinimalSerializer, PublicationListSerializer, PublicationDetailSerializer,
-    AuthorSerializer, VenueSerializer, ResearchAreaSerializer,
+    AuthorSerializer, VenueSerializer, ResearchAreaSerializer, ResearchAreaMinimalSerializer,
     CitationMetricSerializer, CollaborationSerializer,
     LabPublicationStatsSerializer
 )
@@ -861,7 +861,6 @@ class VenueViewSet(viewsets.ModelViewSet):
 # @method_decorator(cache_page(60 * 60 * 24), name='retrieve')  # Cache detail for 24 hours
 class ResearchAreaViewSet(viewsets.ModelViewSet):
     """연구 분야 관리 ViewSet"""
-    serializer_class = ResearchAreaSerializer
     permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
@@ -878,6 +877,13 @@ class ResearchAreaViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(department_id=department_id)
 
         return queryset
+
+    def get_serializer_class(self):
+        """Return appropriate serializer based on fields parameter"""
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            return ResearchAreaMinimalSerializer
+        return ResearchAreaSerializer
 
     @cache_response('RESEARCH_AREAS', timeout=60*60*6)
     @action(detail=False, methods=['get'])

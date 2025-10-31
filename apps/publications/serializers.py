@@ -7,6 +7,13 @@ from .models import (
 )
 
 
+class ResearchAreaMinimalSerializer(serializers.ModelSerializer):
+    """연구 분야 최소 정보 시리얼라이저"""
+    class Meta:
+        model = ResearchArea
+        fields = ['id', 'name']
+
+
 class ResearchAreaSerializer(serializers.ModelSerializer):
     """연구 분야 시리얼라이저"""
     full_path = serializers.ReadOnlyField()
