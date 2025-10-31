@@ -39,7 +39,7 @@ class UniversityDepartmentMinimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UniversityDepartment
-        fields = ['id', 'name']
+        fields = ['id', 'department', 'name']
 
 
 class UniversityDepartmentSerializer(serializers.ModelSerializer):
