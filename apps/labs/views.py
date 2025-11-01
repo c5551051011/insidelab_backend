@@ -12,7 +12,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import Lab, ResearchTopic, Publication, RecruitmentStatus
 from .serializers import (
-    LabMinimalSerializer, LabListSerializer, LabDetailSerializer,
+    LabMinimalSerializer, LabCompactSerializer, LabListSerializer, LabDetailSerializer,
     ResearchTopicSerializer, PublicationSerializer,
     RecruitmentStatusSerializer
 )
@@ -34,6 +34,13 @@ class LabViewSet(viewsets.ModelViewSet):
         if fields == 'minimal':
             # For minimal fields, only need head professor name
             queryset = Lab.objects.select_related('head_professor')
+        elif fields == 'compact':
+            # For compact fields, need university, head_professor, and department info
+            queryset = Lab.objects.select_related(
+                'head_professor',
+                'university',
+                'university_department__department'
+            )
         elif self.action == 'retrieve':
             # For detail view, prefetch all related data
             queryset = Lab.objects.select_related(
@@ -68,6 +75,8 @@ class LabViewSet(viewsets.ModelViewSet):
         fields = self.request.query_params.get('fields', 'full')
         if fields == 'minimal':
             return LabMinimalSerializer
+        elif fields == 'compact':
+            return LabCompactSerializer
         return LabListSerializer
     
     @cache_response('LABS', timeout=60*60)  # Cache for 1 hour

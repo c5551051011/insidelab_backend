@@ -32,6 +32,34 @@ class LabMinimalSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'professor_name']
 
 
+class LabCompactSerializer(serializers.ModelSerializer):
+    """Compact fields for lab cards"""
+    university = serializers.CharField(source='university.name', read_only=True)
+    professor = serializers.CharField(source='head_professor.name', read_only=True)
+    field = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
+    rating = serializers.DecimalField(source='overall_rating', max_digits=3, decimal_places=2, read_only=True)
+    reviewCount = serializers.IntegerField(source='review_count', read_only=True)
+
+    class Meta:
+        model = Lab
+        fields = ['id', 'name', 'university', 'professor', 'field', 'department', 'rating', 'reviewCount']
+
+    def get_field(self, obj):
+        """Return first research area or 'Research' as fallback"""
+        if obj.research_areas and len(obj.research_areas) > 0:
+            return obj.research_areas[0]
+        return 'Research'
+
+    def get_department(self, obj):
+        """Return the best available department name"""
+        if obj.university_department:
+            # Prefer local_name if available, otherwise use department name
+            return obj.university_department.local_name or obj.university_department.department.name
+        # Fallback to legacy department field
+        return obj.department or ''
+
+
 class LabListSerializer(serializers.ModelSerializer):
     """Full fields for lab search/cards"""
     professor_names = serializers.SerializerMethodField()
