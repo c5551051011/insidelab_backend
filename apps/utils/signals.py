@@ -45,19 +45,32 @@ def invalidate_professor_cache(sender, instance, **kwargs):
 @receiver(post_delete, sender='labs.Lab')
 def invalidate_lab_cache(sender, instance, **kwargs):
     """Invalidate lab-related caches when Lab changes"""
-    CacheManager.invalidate_related_caches('lab', instance.id)
-    print(f"Invalidated lab cache for: {instance.name}")
+    # Only invalidate specific lab cache, not all LABS pattern
+    from django.core.cache import cache
+    lab_cache_key = f"insidelab:1:LAB:{instance.id}"
+    cache.delete(lab_cache_key)
+    # Note: Removed pattern-based invalidation for performance
 
 
 @receiver(post_save, sender='reviews.Review')
 @receiver(post_delete, sender='reviews.Review')
 def invalidate_review_cache(sender, instance, **kwargs):
     """Invalidate review-related caches when Review changes"""
-    CacheManager.invalidate_related_caches('review', instance.id)
-    # Also invalidate the related lab's cache since ratings may have changed
-    if hasattr(instance, 'lab_id'):
-        CacheManager.invalidate_related_caches('lab', instance.lab_id)
-    print(f"Invalidated review cache for review: {instance.id}")
+    # Skip full cache invalidation - too slow for production
+    # Instead, only invalidate specific cache keys
+    from django.core.cache import cache
+
+    # Invalidate specific review cache
+    review_cache_key = f"insidelab:1:REVIEW:{instance.id}"
+    cache.delete(review_cache_key)
+
+    # Invalidate specific lab's cache only if it exists
+    if hasattr(instance, 'lab_id') and instance.lab_id:
+        lab_cache_key = f"insidelab:1:LAB:{instance.lab_id}"
+        cache.delete(lab_cache_key)
+
+    # Note: Removed pattern-based cache invalidation to improve performance
+    # Cache will expire naturally based on TTL settings
 
 
 @receiver(post_save, sender='universities.ResearchGroup')
