@@ -36,14 +36,21 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Check if user already has a review for this professor
         professor_id = serializer.validated_data.get('professor_id')
-        if professor_id and Review.objects.filter(
-            user=self.request.user,
-            professor_id=professor_id
-        ).exists():
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError({
-                'detail': 'You have already submitted a review for this professor. Please edit your existing review instead.'
-            })
+        if professor_id:
+            existing_review = Review.objects.filter(
+                user=self.request.user,
+                professor_id=professor_id
+            ).first()
+
+            if existing_review:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({
+                    'error': 'DUPLICATE_REVIEW',
+                    'message': 'You have already submitted a review for this professor.',
+                    'detail': 'Each user can only submit one review per professor. Please edit your existing review instead.',
+                    'existing_review_id': existing_review.id,
+                    'professor_id': professor_id
+                })
 
         serializer.save(user=self.request.user)
     
