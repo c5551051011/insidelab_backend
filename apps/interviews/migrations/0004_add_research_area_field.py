@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                     ON DELETE SET NULL;
 
                     -- Add index for performance
-                    CREATE INDEX CONCURRENTLY IF NOT EXISTS interview_sessions_research_area_id_idx
+                    CREATE INDEX IF NOT EXISTS interview_sessions_research_area_id_idx
                     ON interview_sessions(research_area_id);
                 END IF;
             END
