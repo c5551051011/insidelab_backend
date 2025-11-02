@@ -38,6 +38,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
         queryset = MockInterviewSession.objects.filter(user=user).select_related(
             'user', 'interviewer', 'research_area'
         ).prefetch_related(
+            'research_areas__research_area__department',
             'target_labs__lab__university_department__university',
             'target_labs__lab__university_department__department',
             'target_labs__lab__research_group',

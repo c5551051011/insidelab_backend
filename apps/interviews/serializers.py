@@ -1,8 +1,9 @@
 # apps/interviews/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import MockInterviewSession, SessionLab, SessionTimeSlot
+from .models import MockInterviewSession, SessionLab, SessionTimeSlot, SessionResearchArea
 from apps.labs.models import Lab
+from apps.publications.models import ResearchArea
 
 User = get_user_model()
 
@@ -15,18 +16,27 @@ class SessionTimeSlotSerializer(serializers.ModelSerializer):
         fields = ['date', 'time', 'priority']
 
 
+class SessionResearchAreaSerializer(serializers.ModelSerializer):
+    """Serializer for research areas"""
+    research_area_name = serializers.CharField(source='research_area.name', read_only=True)
+    department_name = serializers.CharField(source='research_area.department.name', read_only=True)
+
+    class Meta:
+        model = SessionResearchArea
+        fields = ['research_area', 'research_area_name', 'department_name', 'priority']
+
+
 class SessionLabSerializer(serializers.ModelSerializer):
     """Serializer for target labs"""
     lab_name = serializers.CharField(source='lab.name', read_only=True)
     university_name = serializers.CharField(source='lab.university.name', read_only=True)
-    department_name = serializers.CharField(source='lab.department.name', read_only=True)
-    field_name = serializers.CharField(source='lab.field.name', read_only=True)
-    professor_name = serializers.CharField(source='lab.professor.name', read_only=True)
+    department_name = serializers.CharField(source='lab.university_department.department.name', read_only=True)
+    head_professor_name = serializers.CharField(source='lab.head_professor.name', read_only=True)
 
     class Meta:
         model = SessionLab
         fields = ['lab', 'lab_name', 'university_name', 'department_name',
-                  'field_name', 'professor_name', 'priority']
+                  'head_professor_name', 'priority']
 
 
 class InterviewerSerializer(serializers.ModelSerializer):
@@ -43,13 +53,41 @@ class MockInterviewSessionListSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     interviewer_email = serializers.CharField(source='interviewer.email', read_only=True, allow_null=True)
 
+    # Add summary information for research areas and labs
+    research_area_count = serializers.SerializerMethodField()
+    target_lab_count = serializers.SerializerMethodField()
+    preferred_slot_count = serializers.SerializerMethodField()
+    primary_research_area = serializers.SerializerMethodField()
+    primary_lab = serializers.SerializerMethodField()
+
     class Meta:
         model = MockInterviewSession
         fields = [
             'id', 'session_type', 'session_type_display', 'status', 'status_display',
             'confirmed_date', 'confirmed_time', 'total_price',
-            'interviewer_email', 'match_type', 'created_at', 'updated_at'
+            'interviewer_email', 'match_type', 'created_at', 'updated_at',
+            'research_area_count', 'target_lab_count', 'preferred_slot_count',
+            'primary_research_area', 'primary_lab'
         ]
+
+    def get_research_area_count(self, obj):
+        return obj.research_areas.count()
+
+    def get_target_lab_count(self, obj):
+        return obj.target_labs.count()
+
+    def get_preferred_slot_count(self, obj):
+        return obj.preferred_slots.count()
+
+    def get_primary_research_area(self, obj):
+        """Get the first priority research area"""
+        primary = obj.research_areas.filter(priority=1).first()
+        return primary.research_area.name if primary else None
+
+    def get_primary_lab(self, obj):
+        """Get the first priority lab"""
+        primary = obj.target_labs.filter(priority=1).first()
+        return primary.lab.name if primary else None
 
 
 class MockInterviewSessionDetailSerializer(serializers.ModelSerializer):
@@ -58,6 +96,7 @@ class MockInterviewSessionDetailSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     match_type_display = serializers.CharField(source='get_match_type_display', read_only=True, allow_null=True)
 
+    research_areas = SessionResearchAreaSerializer(many=True, read_only=True)
     target_labs = SessionLabSerializer(many=True, read_only=True)
     preferred_slots = SessionTimeSlotSerializer(many=True, read_only=True)
     interviewer = InterviewerSerializer(read_only=True)
@@ -68,12 +107,20 @@ class MockInterviewSessionDetailSerializer(serializers.ModelSerializer):
             'id', 'session_type', 'session_type_display', 'status', 'status_display',
             'focus_areas', 'additional_notes', 'match_type', 'match_type_display',
             'interviewer', 'confirmed_date', 'confirmed_time', 'total_price',
-            'target_labs', 'preferred_slots', 'created_at', 'updated_at'
+            'research_areas', 'target_labs', 'preferred_slots', 'created_at', 'updated_at'
         ]
 
 
 class MockInterviewSessionCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating new sessions"""
+    selected_research_areas = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        max_length=3,
+        min_length=1,
+        help_text='List of research area IDs (max 3)'
+    )
+
     selected_labs = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
@@ -93,9 +140,24 @@ class MockInterviewSessionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MockInterviewSession
         fields = [
-            'session_type', 'research_area', 'focus_areas', 'additional_notes',
-            'total_price', 'selected_labs', 'preferred_slots'
+            'session_type', 'focus_areas', 'additional_notes',
+            'total_price', 'selected_research_areas', 'selected_labs', 'preferred_slots'
         ]
+
+    def validate_selected_research_areas(self, value):
+        """Validate that research area IDs exist and max 3 areas selected"""
+        if len(value) > 3:
+            raise serializers.ValidationError("Maximum 3 research areas can be selected")
+
+        if len(value) == 0:
+            raise serializers.ValidationError("At least 1 research area must be selected")
+
+        # Check if all research areas exist
+        existing_areas = ResearchArea.objects.filter(id__in=value).count()
+        if existing_areas != len(value):
+            raise serializers.ValidationError("One or more research area IDs are invalid")
+
+        return value
 
     def validate_selected_labs(self, value):
         """Validate that lab IDs exist and max 2 labs selected"""
@@ -139,7 +201,8 @@ class MockInterviewSessionCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        """Create session with related labs and time slots"""
+        """Create session with related research areas, labs and time slots"""
+        selected_research_areas = validated_data.pop('selected_research_areas')
         selected_labs = validated_data.pop('selected_labs')
         preferred_slots = validated_data.pop('preferred_slots')
 
@@ -151,6 +214,14 @@ class MockInterviewSessionCreateSerializer(serializers.ModelSerializer):
 
         # Create the session
         session = MockInterviewSession.objects.create(**validated_data)
+
+        # Create research areas
+        for idx, research_area_id in enumerate(selected_research_areas):
+            SessionResearchArea.objects.create(
+                session=session,
+                research_area_id=research_area_id,
+                priority=idx + 1
+            )
 
         # Create target labs
         for idx, lab_id in enumerate(selected_labs):

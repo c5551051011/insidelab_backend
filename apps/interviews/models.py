@@ -43,13 +43,13 @@ class MockInterviewSession(models.Model):
         default='mock_interview'
     )
 
-    # Research area for matching
+    # Legacy research area field - use research_areas relationship instead
     research_area = models.ForeignKey(
         'publications.ResearchArea',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text='Primary research area for interviewer matching'
+        help_text='Legacy field - use research_areas relationship instead'
     )
 
     focus_areas = models.TextField(
@@ -184,3 +184,34 @@ class SessionTimeSlot(models.Model):
 
     def __str__(self):
         return f"{self.session.id} - {self.date} {self.time} (Priority {self.priority})"
+
+
+class SessionResearchArea(models.Model):
+    """Research areas for session matching"""
+
+    session = models.ForeignKey(
+        MockInterviewSession,
+        on_delete=models.CASCADE,
+        related_name='research_areas'
+    )
+
+    research_area = models.ForeignKey(
+        'publications.ResearchArea',
+        on_delete=models.CASCADE,
+        help_text='Research area for matching'
+    )
+
+    priority = models.IntegerField(
+        default=1,
+        help_text='Priority order (1 = highest)'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'session_research_areas'
+        ordering = ['priority']
+        unique_together = ['session', 'research_area']
+
+    def __str__(self):
+        return f"{self.session.id} - {self.research_area.name} (Priority {self.priority})"
