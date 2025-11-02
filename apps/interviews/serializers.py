@@ -60,6 +60,11 @@ class MockInterviewSessionListSerializer(serializers.ModelSerializer):
     primary_research_area = serializers.SerializerMethodField()
     primary_lab = serializers.SerializerMethodField()
 
+    # Add actual lists for quick overview
+    research_area_names = serializers.SerializerMethodField()
+    target_lab_names = serializers.SerializerMethodField()
+    preferred_slot_summary = serializers.SerializerMethodField()
+
     class Meta:
         model = MockInterviewSession
         fields = [
@@ -67,7 +72,8 @@ class MockInterviewSessionListSerializer(serializers.ModelSerializer):
             'confirmed_date', 'confirmed_time', 'total_price',
             'interviewer_email', 'match_type', 'created_at', 'updated_at',
             'research_area_count', 'target_lab_count', 'preferred_slot_count',
-            'primary_research_area', 'primary_lab'
+            'primary_research_area', 'primary_lab',
+            'research_area_names', 'target_lab_names', 'preferred_slot_summary'
         ]
 
     def get_research_area_count(self, obj):
@@ -88,6 +94,38 @@ class MockInterviewSessionListSerializer(serializers.ModelSerializer):
         """Get the first priority lab"""
         primary = obj.target_labs.filter(priority=1).first()
         return primary.lab.name if primary else None
+
+    def get_research_area_names(self, obj):
+        """Get list of research area names ordered by priority"""
+        return [
+            {
+                'name': ra.research_area.name,
+                'priority': ra.priority
+            }
+            for ra in obj.research_areas.all().order_by('priority')
+        ]
+
+    def get_target_lab_names(self, obj):
+        """Get list of lab names ordered by priority"""
+        return [
+            {
+                'name': lab.lab.name,
+                'university': lab.lab.university.name if lab.lab.university else '',
+                'priority': lab.priority
+            }
+            for lab in obj.target_labs.all().order_by('priority')
+        ]
+
+    def get_preferred_slot_summary(self, obj):
+        """Get summary of preferred time slots"""
+        return [
+            {
+                'date': slot.date.strftime('%Y-%m-%d'),
+                'time': slot.time.strftime('%H:%M'),
+                'priority': slot.priority
+            }
+            for slot in obj.preferred_slots.all().order_by('priority')
+        ]
 
 
 class MockInterviewSessionDetailSerializer(serializers.ModelSerializer):
