@@ -108,6 +108,18 @@ class MockInterviewSession(models.Model):
         help_text='Total price in USD'
     )
 
+    # Additional session data
+    zoom_link = models.URLField(
+        blank=True,
+        help_text='Zoom meeting link for confirmed sessions'
+    )
+
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Timestamp when session was completed'
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

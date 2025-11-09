@@ -41,10 +41,96 @@ class SessionLabSerializer(serializers.ModelSerializer):
 
 class InterviewerSerializer(serializers.ModelSerializer):
     """Serializer for interviewer details"""
+    lab_name = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+    recent_reviews = serializers.SerializerMethodField()
+    education = serializers.SerializerMethodField()
+    research_areas = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'position', 'university', 'department']
+        fields = [
+            'id', 'email', 'first_name', 'last_name', 'position',
+            'university', 'department', 'lab_name', 'bio', 'profile_image',
+            'average_rating', 'review_count', 'recent_reviews',
+            'education', 'research_areas'
+        ]
+
+    def get_lab_name(self, obj):
+        """Get interviewer's lab name"""
+        # Try to get from professor profile first
+        if hasattr(obj, 'professor_profile'):
+            professor = obj.professor_profile
+            if professor.lab:
+                return professor.lab.name
+        return None
+
+    def get_bio(self, obj):
+        """Get interviewer's bio"""
+        if hasattr(obj, 'professor_profile') and obj.professor_profile:
+            return obj.professor_profile.bio
+        return ""
+
+    def get_profile_image(self, obj):
+        """Get interviewer's profile image"""
+        if hasattr(obj, 'professor_profile') and obj.professor_profile:
+            return obj.professor_profile.profile_image_url
+        return None
+
+    def get_average_rating(self, obj):
+        """Get interviewer's average rating"""
+        if hasattr(obj, 'professor_profile') and obj.professor_profile:
+            return float(obj.professor_profile.overall_rating) if obj.professor_profile.overall_rating else 0.0
+        return 0.0
+
+    def get_review_count(self, obj):
+        """Get interviewer's review count"""
+        if hasattr(obj, 'professor_profile') and obj.professor_profile:
+            return obj.professor_profile.review_count
+        return 0
+
+    def get_recent_reviews(self, obj):
+        """Get recent reviews for interviewer"""
+        if hasattr(obj, 'professor_profile') and obj.professor_profile:
+            from apps.reviews.models import Review
+            recent_reviews = Review.objects.filter(
+                professor=obj.professor_profile,
+                status='active'
+            ).order_by('-created_at')[:3]
+
+            return [
+                {
+                    'rating': review.rating,
+                    'comment': review.comment[:100] + ('...' if len(review.comment) > 100 else '')
+                }
+                for review in recent_reviews
+            ]
+        return []
+
+    def get_education(self, obj):
+        """Get interviewer's education background"""
+        if hasattr(obj, 'research_profile') and obj.research_profile:
+            education_list = []
+            profile = obj.research_profile
+
+            if profile.phd_university:
+                education_list.append(f"PhD in {profile.phd_field or 'Research'} - {profile.phd_university}")
+            if profile.masters_university:
+                education_list.append(f"MS in {profile.masters_field or 'Research'} - {profile.masters_university}")
+            if profile.bachelors_university:
+                education_list.append(f"BS in {profile.bachelors_field or 'Research'} - {profile.bachelors_university}")
+
+            return education_list
+        return []
+
+    def get_research_areas(self, obj):
+        """Get interviewer's research areas"""
+        if hasattr(obj, 'research_profile') and obj.research_profile:
+            return obj.research_profile.research_interests or []
+        return []
 
 
 class MockInterviewSessionListSerializer(serializers.ModelSerializer):
@@ -65,15 +151,23 @@ class MockInterviewSessionListSerializer(serializers.ModelSerializer):
     target_lab_names = serializers.SerializerMethodField()
     preferred_slot_summary = serializers.SerializerMethodField()
 
+    # Add missing fields
+    focus_areas = serializers.CharField(read_only=True)
+    interviewer = serializers.SerializerMethodField()
+    zoom_link = serializers.SerializerMethodField()
+    completed_at = serializers.SerializerMethodField()
+    confirmed_time_formatted = serializers.SerializerMethodField()
+
     class Meta:
         model = MockInterviewSession
         fields = [
             'id', 'session_type', 'session_type_display', 'status', 'status_display',
-            'confirmed_date', 'confirmed_time', 'total_price',
-            'interviewer_email', 'match_type', 'created_at', 'updated_at',
+            'confirmed_date', 'confirmed_time', 'confirmed_time_formatted', 'total_price',
+            'interviewer_email', 'interviewer', 'match_type', 'created_at', 'updated_at',
             'research_area_count', 'target_lab_count', 'preferred_slot_count',
             'primary_research_area', 'primary_lab',
-            'research_area_names', 'target_lab_names', 'preferred_slot_summary'
+            'research_area_names', 'target_lab_names', 'preferred_slot_summary',
+            'focus_areas', 'zoom_link', 'completed_at'
         ]
 
     def get_research_area_count(self, obj):
@@ -110,22 +204,52 @@ class MockInterviewSessionListSerializer(serializers.ModelSerializer):
         return [
             {
                 'name': lab.lab.name,
-                'university': lab.lab.university.name if lab.lab.university else '',
+                'university_name': lab.lab.university.name if lab.lab.university else '',
+                'field_name': self._get_lab_field_name(lab.lab),
                 'priority': lab.priority
             }
             for lab in obj.target_labs.all().order_by('priority')
         ]
 
     def get_preferred_slot_summary(self, obj):
-        """Get summary of preferred time slots"""
-        return [
-            {
-                'date': slot.date.strftime('%Y-%m-%d'),
-                'time': slot.time.strftime('%H:%M'),
-                'priority': slot.priority
-            }
-            for slot in obj.preferred_slots.all().order_by('priority')
-        ]
+        """Get formatted preferred time slots"""
+        slots = []
+        for slot in obj.preferred_slots.all().order_by('priority'):
+            # Format as "2024-11-15 at 2:00 PM"
+            date_str = slot.date.strftime('%Y-%m-%d')
+            time_str = slot.time.strftime('%-I:%M %p')  # 2:00 PM format
+            slots.append(f"{date_str} at {time_str}")
+        return slots
+
+    def _get_lab_field_name(self, lab):
+        """Helper to get lab's field/department name"""
+        if lab.university_department and lab.university_department.department:
+            return lab.university_department.department.name
+        return lab.department or 'Research'
+
+    def get_interviewer(self, obj):
+        """Get detailed interviewer info only if status is confirmed/completed"""
+        if obj.status in ['confirmed', 'completed'] and obj.interviewer:
+            return InterviewerSerializer(obj.interviewer).data
+        return None
+
+    def get_zoom_link(self, obj):
+        """Get zoom link if session is confirmed"""
+        if obj.status in ['confirmed', 'completed'] and obj.zoom_link:
+            return obj.zoom_link
+        return None
+
+    def get_completed_at(self, obj):
+        """Get completion timestamp for completed sessions"""
+        if obj.status == 'completed' and obj.completed_at:
+            return obj.completed_at
+        return None
+
+    def get_confirmed_time_formatted(self, obj):
+        """Get formatted confirmed time like '2:00 PM'"""
+        if obj.confirmed_time:
+            return obj.confirmed_time.strftime('%-I:%M %p')
+        return None
 
 
 class MockInterviewSessionDetailSerializer(serializers.ModelSerializer):
@@ -139,14 +263,94 @@ class MockInterviewSessionDetailSerializer(serializers.ModelSerializer):
     preferred_slots = SessionTimeSlotSerializer(many=True, read_only=True)
     interviewer = InterviewerSerializer(read_only=True)
 
+    # Add enhanced fields from list serializer
+    research_area_names = serializers.SerializerMethodField()
+    research_area_count = serializers.SerializerMethodField()
+    primary_research_area = serializers.SerializerMethodField()
+    target_lab_names = serializers.SerializerMethodField()
+    target_lab_count = serializers.SerializerMethodField()
+    primary_lab = serializers.SerializerMethodField()
+    preferred_slot_summary = serializers.SerializerMethodField()
+    preferred_slot_count = serializers.SerializerMethodField()
+    zoom_link = serializers.SerializerMethodField()
+    completed_at = serializers.SerializerMethodField()
+    confirmed_time_formatted = serializers.SerializerMethodField()
+
     class Meta:
         model = MockInterviewSession
         fields = [
             'id', 'session_type', 'session_type_display', 'status', 'status_display',
             'focus_areas', 'additional_notes', 'match_type', 'match_type_display',
-            'interviewer', 'confirmed_date', 'confirmed_time', 'total_price',
-            'research_areas', 'target_labs', 'preferred_slots', 'created_at', 'updated_at'
+            'interviewer', 'confirmed_date', 'confirmed_time', 'confirmed_time_formatted',
+            'total_price', 'created_at', 'updated_at',
+            # Enhanced summary fields
+            'research_area_names', 'research_area_count', 'primary_research_area',
+            'target_lab_names', 'target_lab_count', 'primary_lab',
+            'preferred_slot_summary', 'preferred_slot_count',
+            'zoom_link', 'completed_at',
+            # Legacy detail fields
+            'research_areas', 'target_labs', 'preferred_slots'
         ]
+
+    # Copy methods from ListSerializer
+    def get_research_area_names(self, obj):
+        return [ra.research_area.name for ra in obj.research_areas.all().order_by('priority')]
+
+    def get_research_area_count(self, obj):
+        return obj.research_areas.count()
+
+    def get_primary_research_area(self, obj):
+        primary = obj.research_areas.filter(priority=1).first()
+        return primary.research_area.name if primary else None
+
+    def get_target_lab_names(self, obj):
+        return [
+            {
+                'name': lab.lab.name,
+                'university_name': lab.lab.university.name if lab.lab.university else '',
+                'field_name': self._get_lab_field_name(lab.lab),
+                'priority': lab.priority
+            }
+            for lab in obj.target_labs.all().order_by('priority')
+        ]
+
+    def get_target_lab_count(self, obj):
+        return obj.target_labs.count()
+
+    def get_primary_lab(self, obj):
+        primary = obj.target_labs.filter(priority=1).first()
+        return primary.lab.name if primary else None
+
+    def get_preferred_slot_summary(self, obj):
+        slots = []
+        for slot in obj.preferred_slots.all().order_by('priority'):
+            date_str = slot.date.strftime('%Y-%m-%d')
+            time_str = slot.time.strftime('%-I:%M %p')
+            slots.append(f"{date_str} at {time_str}")
+        return slots
+
+    def get_preferred_slot_count(self, obj):
+        return obj.preferred_slots.count()
+
+    def get_zoom_link(self, obj):
+        if obj.status in ['confirmed', 'completed'] and obj.zoom_link:
+            return obj.zoom_link
+        return None
+
+    def get_completed_at(self, obj):
+        if obj.status == 'completed' and obj.completed_at:
+            return obj.completed_at
+        return None
+
+    def get_confirmed_time_formatted(self, obj):
+        if obj.confirmed_time:
+            return obj.confirmed_time.strftime('%-I:%M %p')
+        return None
+
+    def _get_lab_field_name(self, lab):
+        if lab.university_department and lab.university_department.department:
+            return lab.university_department.department.name
+        return lab.department or 'Research'
 
 
 class MockInterviewSessionCreateSerializer(serializers.ModelSerializer):
