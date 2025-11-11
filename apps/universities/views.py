@@ -10,6 +10,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import University, Professor, ResearchGroup, UniversityDepartment, Department
 from .serializers import UniversityMinimalSerializer, UniversitySerializer, ProfessorMinimalSerializer, ProfessorSerializer, ResearchGroupMinimalSerializer, ResearchGroupSerializer, UniversityDepartmentMinimalSerializer, UniversityDepartmentSerializer, DepartmentSerializer, DepartmentMinimalSerializer
+from .filters import ProfessorFilter
 from apps.utils.cache import cache_response, CacheManager
 
 class UniversityViewSet(viewsets.ModelViewSet):
@@ -252,10 +253,13 @@ class ResearchGroupViewSet(viewsets.ModelViewSet):
 class ProfessorViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['university_department__university', 'university_department__department', 'research_group']
-    search_fields = ['name', 'research_interests']
-    ordering_fields = ['name', 'created_at']
-    ordering = ['name']
+    filterset_class = ProfessorFilter
+    search_fields = ['name', 'research_interests', 'bio', 'department']
+    ordering_fields = [
+        'name', 'created_at', 'overall_rating', 'review_count',
+        'university_department__university__name', 'university_department__department__name'
+    ]
+    ordering = ['university_department__university__name', 'university_department__department__name', 'name']
 
     def get_queryset(self):
         # Check for fields parameter to optimize queries
