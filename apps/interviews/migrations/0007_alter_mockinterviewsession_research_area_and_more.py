@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('publications', '0008_alter_researcharea_name'),
+        ('publications', '0007_populate_research_areas_by_department'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('interviews', '0006_add_zoom_and_completed_fields'),
     ]
