@@ -9,7 +9,8 @@ from .views import (
     get_current_user, update_profile, google_auth, resend_verification_email,
     unsubscribe, test_registration, UserLabInterestViewSet, UserResearchProfileViewSet,
     send_university_verification, verify_university_email, resend_university_verification,
-    request_university_domain, check_university_email, send_feedback
+    request_university_domain, check_university_email, send_feedback,
+    check_email_availability, check_username_availability
 )
 
 # Create router for ViewSets
@@ -28,6 +29,10 @@ urlpatterns = [
     path('user/', get_current_user, name='get_current_user'),
     path('profile/', update_profile, name='update_profile'),
     path('google/', google_auth, name='google_auth'),
+
+    # Duplicate check endpoints
+    path('check-email/', check_email_availability, name='check_email_availability'),
+    path('check-username/', check_username_availability, name='check_username_availability'),
 
     # University email verification endpoints
     path('university/send-verification/', send_university_verification, name='send_university_verification'),

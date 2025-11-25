@@ -361,7 +361,7 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Users can only see their own lab interests
         return UserLabInterest.objects.filter(user=self.request.user).select_related(
-            'lab', 'lab__professor', 'lab__university_department__university',
+            'lab', 'lab__head_professor', 'lab__university_department__university',
             'lab__university_department__department'
         )
 
@@ -595,6 +595,120 @@ def check_university_email(request):
         'is_supported': is_supported,
         'university': university.name if university else None,
         'can_verify': is_supported
+    })
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_summary="이메일 중복 확인",
+    operation_description="회원가입 시 이메일 중복 여부를 확인합니다.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['email'],
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='확인할 이메일 주소')
+        }
+    ),
+    responses={
+        200: openapi.Response(
+            description='중복 확인 결과',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'available': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='사용 가능 여부'),
+                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='결과 메시지')
+                }
+            )
+        ),
+        400: error_response
+    },
+    tags=['Authentication']
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def check_email_availability(request):
+    """Check if email is already registered"""
+    email = request.data.get('email')
+
+    if not email:
+        return Response({
+            'error': 'Email is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate email format
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        return Response({
+            'error': 'Invalid email format'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if email exists
+    email_exists = User.objects.filter(email=email).exists()
+
+    return Response({
+        'available': not email_exists,
+        'message': 'Email is available' if not email_exists else 'Email is already registered'
+    })
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_summary="사용자명 중복 확인",
+    operation_description="회원가입 시 사용자명(username) 중복 여부를 확인합니다.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['username'],
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING, description='확인할 사용자명')
+        }
+    ),
+    responses={
+        200: openapi.Response(
+            description='중복 확인 결과',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'available': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='사용 가능 여부'),
+                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='결과 메시지')
+                }
+            )
+        ),
+        400: error_response
+    },
+    tags=['Authentication']
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def check_username_availability(request):
+    """Check if username is already taken"""
+    username = request.data.get('username')
+
+    if not username:
+        return Response({
+            'error': 'Username is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate username format (alphanumeric and underscore only)
+    import re
+    username_pattern = r'^[a-zA-Z0-9_]+$'
+    if not re.match(username_pattern, username):
+        return Response({
+            'error': 'Username can only contain letters, numbers, and underscores'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check minimum length
+    if len(username) < 3:
+        return Response({
+            'error': 'Username must be at least 3 characters long'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if username exists
+    username_exists = User.objects.filter(username=username).exists()
+
+    return Response({
+        'available': not username_exists,
+        'message': 'Username is available' if not username_exists else 'Username is already taken'
     })
 
 
