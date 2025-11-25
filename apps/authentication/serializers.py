@@ -115,10 +115,11 @@ class UserLabInterestSerializer(serializers.ModelSerializer):
 
 class UserLabInterestMinimalSerializer(serializers.ModelSerializer):
     """Minimal serializer for user lab interests - only IDs"""
+    professor = serializers.IntegerField(source='lab.head_professor.id', read_only=True)
 
     class Meta:
         model = UserLabInterest
-        fields = ['id', 'lab']
+        fields = ['id', 'lab', 'professor']
 
 
 class UserLabInterestCreateSerializer(serializers.ModelSerializer):

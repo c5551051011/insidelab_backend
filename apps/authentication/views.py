@@ -366,8 +366,8 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
         # Optimize queries based on fields parameter
         fields = self.request.query_params.get('fields', 'full')
         if fields == 'minimal':
-            # For minimal fields, only select lab (no additional relations needed)
-            queryset = queryset.select_related('lab')
+            # For minimal fields, select lab and head_professor for professor_id
+            queryset = queryset.select_related('lab', 'lab__head_professor')
         else:
             # For full fields, select all related data
             queryset = queryset.select_related(
