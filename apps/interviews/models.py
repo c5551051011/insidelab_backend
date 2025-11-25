@@ -227,3 +227,87 @@ class SessionResearchArea(models.Model):
 
     def __str__(self):
         return f"{self.session.id} - {self.research_area.name} (Priority {self.priority})"
+
+
+class InterviewReview(models.Model):
+    """Review system for mock interview sessions"""
+
+    REVIEWER_TYPE_CHOICES = [
+        ('interviewee', 'Interviewee'),
+        ('interviewer', 'Interviewer'),
+    ]
+
+    session = models.ForeignKey(
+        MockInterviewSession,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        help_text='Interview session being reviewed'
+    )
+
+    reviewer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='interview_reviews_given',
+        help_text='User who gave this review'
+    )
+
+    reviewer_type = models.CharField(
+        max_length=20,
+        choices=REVIEWER_TYPE_CHOICES,
+        help_text='Type of reviewer (interviewee or interviewer)'
+    )
+
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        help_text='Rating from 1 to 5'
+    )
+
+    comment = models.TextField(
+        blank=True,
+        help_text='Optional review comment'
+    )
+
+    # Review categories for structured feedback
+    communication_rating = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
+        help_text='Communication skills rating (1-5)'
+    )
+
+    preparation_rating = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
+        help_text='Preparation level rating (1-5)'
+    )
+
+    helpfulness_rating = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
+        help_text='Helpfulness rating (1-5)'
+    )
+
+    # Status
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Whether this review is active/visible'
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'interview_reviews'
+        ordering = ['-created_at']
+        unique_together = ['session', 'reviewer', 'reviewer_type']
+        indexes = [
+            models.Index(fields=['session', 'reviewer_type']),
+            models.Index(fields=['reviewer', 'reviewer_type']),
+            models.Index(fields=['rating', 'is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.reviewer_type} review for session {self.session.id} - {self.rating}/5"

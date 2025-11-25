@@ -1,7 +1,7 @@
 # apps/interviews/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import MockInterviewSession, SessionLab, SessionTimeSlot, SessionResearchArea
+from .models import MockInterviewSession, SessionLab, SessionTimeSlot, SessionResearchArea, InterviewReview
 from apps.labs.models import Lab
 from apps.publications.models import ResearchArea
 
@@ -502,3 +502,68 @@ class AssignInterviewerSerializer(serializers.Serializer):
         if not User.objects.filter(id=value).exists():
             raise serializers.ValidationError("Interviewer user does not exist")
         return value
+
+
+class InterviewReviewSerializer(serializers.ModelSerializer):
+    """Serializer for interview reviews"""
+    reviewer_name = serializers.CharField(source='reviewer.get_full_name', read_only=True)
+    reviewer_type_display = serializers.CharField(source='get_reviewer_type_display', read_only=True)
+    session_id = serializers.IntegerField(source='session.id', read_only=True)
+
+    class Meta:
+        model = InterviewReview
+        fields = [
+            'id', 'session', 'session_id', 'reviewer', 'reviewer_name',
+            'reviewer_type', 'reviewer_type_display', 'rating', 'comment',
+            'communication_rating', 'preparation_rating', 'helpfulness_rating',
+            'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['reviewer', 'session']
+
+    def validate_rating(self, value):
+        """Validate rating is between 1-5"""
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value
+
+    def validate_communication_rating(self, value):
+        """Validate communication rating if provided"""
+        if value is not None and (value < 1 or value > 5):
+            raise serializers.ValidationError("Communication rating must be between 1 and 5")
+        return value
+
+    def validate_preparation_rating(self, value):
+        """Validate preparation rating if provided"""
+        if value is not None and (value < 1 or value > 5):
+            raise serializers.ValidationError("Preparation rating must be between 1 and 5")
+        return value
+
+    def validate_helpfulness_rating(self, value):
+        """Validate helpfulness rating if provided"""
+        if value is not None and (value < 1 or value > 5):
+            raise serializers.ValidationError("Helpfulness rating must be between 1 and 5")
+        return value
+
+
+class InterviewReviewCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating interview reviews"""
+
+    class Meta:
+        model = InterviewReview
+        fields = [
+            'rating', 'comment', 'communication_rating',
+            'preparation_rating', 'helpfulness_rating'
+        ]
+
+    def validate_rating(self, value):
+        """Validate rating is between 1-5"""
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value
+
+    def create(self, validated_data):
+        """Create review with session and reviewer from context"""
+        validated_data['session'] = self.context['session']
+        validated_data['reviewer'] = self.context['reviewer']
+        validated_data['reviewer_type'] = self.context['reviewer_type']
+        return super().create(validated_data)

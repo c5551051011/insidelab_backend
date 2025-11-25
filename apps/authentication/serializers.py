@@ -77,7 +77,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserLabInterestSerializer(serializers.ModelSerializer):
     """Serializer for user lab interests"""
     lab_name = serializers.CharField(source='lab.name', read_only=True)
-    lab_professor = serializers.CharField(source='lab.professor.name', read_only=True)
+    lab_professor = serializers.CharField(source='lab.head_professor.name', read_only=True)
     lab_university = serializers.CharField(source='lab.university_department.university.name', read_only=True)
     lab_department = serializers.CharField(source='lab.university_department.department.name', read_only=True)
     lab_rating = serializers.DecimalField(source='lab.overall_rating', max_digits=3, decimal_places=2, read_only=True)
