@@ -75,19 +75,35 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserLabInterestSerializer(serializers.ModelSerializer):
-    """Serializer for user lab interests"""
+    """Serializer for user lab interests with detailed lab information"""
+    # Required fields
     lab_name = serializers.CharField(source='lab.name', read_only=True)
-    lab_professor = serializers.CharField(source='lab.head_professor.name', read_only=True)
-    lab_university = serializers.CharField(source='lab.university_department.university.name', read_only=True)
-    lab_department = serializers.CharField(source='lab.university_department.department.name', read_only=True)
-    lab_rating = serializers.DecimalField(source='lab.overall_rating', max_digits=3, decimal_places=2, read_only=True)
+    professor_name = serializers.CharField(source='lab.head_professor.name', read_only=True)
+    university_name = serializers.CharField(source='lab.university_department.university.name', read_only=True)
+
+    # Optional fields
+    department = serializers.CharField(source='lab.university_department.department.name', read_only=True)
+    research_group = serializers.CharField(source='lab.research_group.name', read_only=True)
+    overall_rating = serializers.DecimalField(source='lab.overall_rating', max_digits=3, decimal_places=2, read_only=True)
+    review_count = serializers.IntegerField(source='lab.review_count', read_only=True)
+    research_areas = serializers.ListField(source='lab.research_areas', read_only=True)
+    tags = serializers.ListField(source='lab.tags', read_only=True)
+    description = serializers.CharField(source='lab.description', read_only=True)
+    website = serializers.URLField(source='lab.website', read_only=True)
+
+    # User interest specific fields
     user_display_name = serializers.CharField(source='user.display_name', read_only=True)
 
     class Meta:
         model = UserLabInterest
         fields = [
-            'id', 'lab', 'lab_name', 'lab_professor', 'lab_university', 'lab_department', 'lab_rating',
-            'interest_type', 'notes', 'created_at', 'updated_at', 'user_display_name'
+            # UserLabInterest fields
+            'id', 'lab', 'interest_type', 'notes', 'created_at', 'updated_at', 'user_display_name',
+            # Lab fields - required
+            'lab_name', 'professor_name', 'university_name',
+            # Lab fields - optional
+            'department', 'research_group', 'overall_rating', 'review_count',
+            'research_areas', 'tags', 'description', 'website'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user_display_name']
 
@@ -95,6 +111,14 @@ class UserLabInterestSerializer(serializers.ModelSerializer):
         # Auto-assign the current user
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class UserLabInterestMinimalSerializer(serializers.ModelSerializer):
+    """Minimal serializer for user lab interests - only IDs"""
+
+    class Meta:
+        model = UserLabInterest
+        fields = ['id', 'lab']
 
 
 class UserLabInterestCreateSerializer(serializers.ModelSerializer):

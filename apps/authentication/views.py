@@ -12,7 +12,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import (
     UserSerializer, RegisterSerializer, UserLabInterestSerializer,
-    UserLabInterestCreateSerializer, UserResearchProfileSerializer
+    UserLabInterestMinimalSerializer, UserLabInterestCreateSerializer,
+    UserResearchProfileSerializer
 )
 from .models import UserLabInterest, UserResearchProfile
 from .utils import send_verification_email, verify_email_token
@@ -360,14 +361,34 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Users can only see their own lab interests
-        return UserLabInterest.objects.filter(user=self.request.user).select_related(
-            'lab', 'lab__head_professor', 'lab__university_department__university',
-            'lab__university_department__department'
-        )
+        queryset = UserLabInterest.objects.filter(user=self.request.user)
+
+        # Optimize queries based on fields parameter
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            # For minimal fields, only select lab (no additional relations needed)
+            queryset = queryset.select_related('lab')
+        else:
+            # For full fields, select all related data
+            queryset = queryset.select_related(
+                'lab',
+                'lab__head_professor',
+                'lab__university_department__university',
+                'lab__university_department__department',
+                'lab__research_group'
+            )
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'create':
             return UserLabInterestCreateSerializer
+
+        # Check for fields parameter
+        fields = self.request.query_params.get('fields', 'full')
+        if fields == 'minimal':
+            return UserLabInterestMinimalSerializer
+
         return UserLabInterestSerializer
 
     def perform_create(self, serializer):
