@@ -75,14 +75,26 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         ratings_input = validated_data.pop('ratings_input')
         review = super().create(validated_data)
+        # Set category ratings without triggering individual updates
         review.set_category_ratings(ratings_input)
+        # Update averages once after all ratings are created
+        if review.lab:
+            review.update_lab_averages()
+        if review.professor:
+            review.professor.update_rating()
         return review
 
     def update(self, instance, validated_data):
         if 'ratings_input' in validated_data:
             ratings_input = validated_data.pop('ratings_input')
             instance.set_category_ratings(ratings_input)
-        return super().update(instance, validated_data)
+        updated_instance = super().update(instance, validated_data)
+        # Update averages once after all changes
+        if updated_instance.lab:
+            updated_instance.update_lab_averages()
+        if updated_instance.professor:
+            updated_instance.professor.update_rating()
+        return updated_instance
     
     def validate_pros(self, value):
         if len(value) == 0:

@@ -136,11 +136,8 @@ class Review(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Update precomputed averages after saving
-        self.update_lab_averages()
-        # Update professor rating cache
-        if self.professor:
-            self.professor.update_rating()
+        # Note: Averages are updated in serializer after all ratings are created
+        # to avoid N+1 problem (updating multiple times during creation)
 
     def delete(self, *args, **kwargs):
         lab_id = self.lab.id if self.lab else None
@@ -195,14 +192,15 @@ class ReviewRating(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Update precomputed averages when rating changes
-        self.update_lab_averages()
+        # Note: Don't update averages here to avoid N+1 problem
+        # Averages are updated once after all ratings are created via Review.save()
 
     def delete(self, *args, **kwargs):
-        lab_id = self.review.lab.id
+        lab_id = self.review.lab.id if self.review.lab else None
         super().delete(*args, **kwargs)
         # Update precomputed averages after deletion
-        self.update_lab_averages_by_id(lab_id)
+        if lab_id:
+            self.update_lab_averages_by_id(lab_id)
 
     def update_lab_averages(self):
         """Update precomputed averages for this rating's lab"""

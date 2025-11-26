@@ -4,6 +4,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.exceptions import ValidationError
+from django.db import IntegrityError
 from django.db.models import F, Avg
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -38,6 +40,35 @@ class ReviewViewSet(viewsets.ModelViewSet):
         # Order by helpful count and recency
         return queryset.order_by('-helpful_count', '-created_at')
     
+    def create(self, request, *args, **kwargs):
+        """Override create to handle duplicate review error properly"""
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            # Handle database-level unique constraint violation
+            if 'unique' in str(e).lower() or 'duplicate' in str(e).lower():
+                # Try to find the existing review
+                professor_id = request.data.get('professor_id')
+                existing_review = Review.objects.filter(
+                    user=request.user,
+                    professor_id=professor_id
+                ).first()
+
+                error_data = {
+                    'error': 'DUPLICATE_REVIEW',
+                    'message': 'You have already submitted a review for this professor.',
+                    'detail': 'Each user can only submit one review per professor. Please edit your existing review instead.',
+                    'professor_id': professor_id
+                }
+
+                if existing_review:
+                    error_data['existing_review_id'] = existing_review.id
+
+                return Response(error_data, status=status.HTTP_409_CONFLICT)
+            else:
+                # Re-raise if it's a different integrity error
+                raise
+
     def perform_create(self, serializer):
         # Check if user already has a review for this professor
         professor_id = serializer.validated_data.get('professor_id')
@@ -48,7 +79,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
             ).first()
 
             if existing_review:
-                from rest_framework.exceptions import ValidationError
                 raise ValidationError({
                     'error': 'DUPLICATE_REVIEW',
                     'message': 'You have already submitted a review for this professor.',
