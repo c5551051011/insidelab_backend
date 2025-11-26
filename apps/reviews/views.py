@@ -21,7 +21,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     def get_queryset(self):
-        queryset = Review.objects.select_related('user', 'lab').prefetch_related(
+        queryset = Review.objects.select_related('user', 'lab', 'professor').prefetch_related(
             'category_ratings__category'
         )
 
@@ -29,6 +29,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
         lab_id = self.request.query_params.get('lab', None)
         if lab_id is not None:
             queryset = queryset.filter(lab_id=lab_id)
+
+        # Filter by professor if specified
+        professor_id = self.request.query_params.get('professor', None)
+        if professor_id is not None:
+            queryset = queryset.filter(professor_id=professor_id)
 
         # Order by helpful count and recency
         return queryset.order_by('-helpful_count', '-created_at')
