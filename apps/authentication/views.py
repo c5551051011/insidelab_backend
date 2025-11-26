@@ -356,12 +356,62 @@ def google_auth(request):
 
 
 class UserLabInterestViewSet(viewsets.ModelViewSet):
-    """ViewSet for managing user lab interests"""
+    """ViewSet for managing user lab interests
+
+    Query parameters for list endpoint:
+    - lab_id: Filter by specific lab ID
+    - interest_type: Filter by interest type (general, application, watching, recruited)
+    - fields: Return minimal or full data (minimal, full)
+    """
     permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="사용자 관심 랩 목록 조회",
+        operation_description="현재 로그인한 사용자의 관심 랩 목록을 조회합니다. lab_id, interest_type 등으로 필터링 가능합니다.",
+        manual_parameters=[
+            openapi.Parameter(
+                'lab_id',
+                openapi.IN_QUERY,
+                description="특정 랩 ID로 필터링",
+                type=openapi.TYPE_INTEGER,
+                required=False
+            ),
+            openapi.Parameter(
+                'interest_type',
+                openapi.IN_QUERY,
+                description="관심 타입으로 필터링 (general, application, watching, recruited)",
+                type=openapi.TYPE_STRING,
+                required=False,
+                enum=['general', 'application', 'watching', 'recruited']
+            ),
+            openapi.Parameter(
+                'fields',
+                openapi.IN_QUERY,
+                description="응답 데이터 형식 (minimal: 최소 정보, full: 전체 정보)",
+                type=openapi.TYPE_STRING,
+                required=False,
+                enum=['minimal', 'full'],
+                default='full'
+            ),
+        ],
+        tags=['User Lab Interests']
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         # Users can only see their own lab interests
         queryset = UserLabInterest.objects.filter(user=self.request.user)
+
+        # Filter by lab_id if provided
+        lab_id = self.request.query_params.get('lab_id')
+        if lab_id:
+            queryset = queryset.filter(lab_id=lab_id)
+
+        # Filter by interest_type if provided
+        interest_type = self.request.query_params.get('interest_type')
+        if interest_type:
+            queryset = queryset.filter(interest_type=interest_type)
 
         # Optimize queries based on fields parameter
         fields = self.request.query_params.get('fields', 'full')
