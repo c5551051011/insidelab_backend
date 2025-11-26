@@ -526,16 +526,9 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
                 'interest': serializer.data
             })
 
-    @action(detail=False, methods=['delete'])
-    def remove_interest(self, request):
-        """Remove interest in a lab"""
-        lab_id = request.query_params.get('lab_id')
-
-        if not lab_id:
-            return Response(
-                {'error': 'lab_id is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def destroy(self, request, *args, **kwargs):
+        """Remove interest in a lab by lab_id (PK in URL)"""
+        lab_id = kwargs.get('pk')  # This is the lab_id from URL
 
         try:
             interest = UserLabInterest.objects.get(
@@ -546,7 +539,7 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
             return Response({
                 'action': 'removed',
                 'message': 'Lab interest removed successfully'
-            })
+            }, status=status.HTTP_204_NO_CONTENT)
         except UserLabInterest.DoesNotExist:
             return Response(
                 {'error': 'Interest not found'},
