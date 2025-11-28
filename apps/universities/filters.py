@@ -14,12 +14,13 @@ class ProfessorFilter(django_filters.FilterSet):
     research_group = django_filters.NumberFilter(field_name='research_group__id')
 
     # Department ID filtering (directly by department, not university_department)
-    department_id = django_filters.NumberFilter(field_name='university_department__department__id')
+    department = django_filters.NumberFilter(field_name='university_department__department__id')
 
     # Multiple filtering support
     universities = django_filters.CharFilter(method='filter_universities')
     university_departments = django_filters.CharFilter(method='filter_university_departments')
     research_groups = django_filters.CharFilter(method='filter_research_groups')
+    departments = django_filters.CharFilter(method='filter_departments')
 
     class Meta:
         model = Professor
@@ -47,4 +48,12 @@ class ProfessorFilter(django_filters.FilterSet):
             group_ids = [int(id.strip()) for id in value.split(',') if id.strip().isdigit()]
             if group_ids:
                 return queryset.filter(research_group__id__in=group_ids)
+        return queryset
+
+    def filter_departments(self, queryset, name, value):
+        """Filter by multiple departments. Format: ?departments=1,2,3"""
+        if value:
+            dept_ids = [int(id.strip()) for id in value.split(',') if id.strip().isdigit()]
+            if dept_ids:
+                return queryset.filter(university_department__department__id__in=dept_ids)
         return queryset
