@@ -13,6 +13,9 @@ class ProfessorFilter(django_filters.FilterSet):
     university_department = django_filters.NumberFilter(field_name='university_department__id')
     research_group = django_filters.NumberFilter(field_name='research_group__id')
 
+    # Department ID filtering (directly by department, not university_department)
+    department_id = django_filters.NumberFilter(field_name='university_department__department__id')
+
     # Multiple filtering support
     universities = django_filters.CharFilter(method='filter_universities')
     university_departments = django_filters.CharFilter(method='filter_university_departments')
