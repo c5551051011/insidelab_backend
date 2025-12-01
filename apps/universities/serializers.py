@@ -112,7 +112,21 @@ class ProfessorMinimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Professor
-        fields = ['id', 'name', 'email', 'lab', 'overall_rating', 'review_count', 'research_areas', 'tags', 'recruitment_status', 'university_name', 'department_name', 'research_group_name']
+        fields = [
+            'id',
+            'name',
+            'email',
+            'google_scholar_url',
+            'lab',
+            'overall_rating',
+            'review_count',
+            'research_areas',
+            'tags',
+            'recruitment_status',
+            'university_name',
+            'department_name',
+            'research_group_name',
+        ]
 
     def get_lab(self, obj):
         """Return lab this professor belongs to"""
@@ -271,4 +285,3 @@ class ProfessorSerializer(serializers.ModelSerializer):
         except:
             pass
         return None
-
