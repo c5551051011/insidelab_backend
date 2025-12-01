@@ -12,7 +12,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from .models import Lab, ResearchTopic, Publication, RecruitmentStatus
 from .serializers import (
-    LabMinimalSerializer, LabCompactSerializer, LabListSerializer, LabDetailSerializer,
+    LabMinimalSerializer, LabCompactSerializer, LabListSerializer, LabDetailSerializer, LabDetailMinimalSerializer,
     ResearchTopicSerializer, PublicationSerializer,
     RecruitmentStatusSerializer
 )
@@ -33,7 +33,13 @@ class LabViewSet(viewsets.ModelViewSet):
 
         if fields == 'minimal':
             # For minimal fields, only need head professor name
-            queryset = Lab.objects.select_related('head_professor')
+            queryset = Lab.objects.select_related(
+                'head_professor',
+                'university',
+                'university_department__university',
+                'university_department__department',
+                'research_group',
+            )
         elif fields == 'compact':
             # For compact fields, need university, head_professor, and department info
             queryset = Lab.objects.select_related(
@@ -69,6 +75,8 @@ class LabViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
+            if self.request.query_params.get('fields') == 'minimal':
+                return LabDetailMinimalSerializer
             return LabDetailSerializer
 
         # Check for fields parameter to determine serializer
@@ -136,4 +144,3 @@ class LabViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(labs, many=True)
         return Response(serializer.data)
-

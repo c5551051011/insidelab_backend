@@ -105,6 +105,37 @@ class LabListSerializer(serializers.ModelSerializer):
         return obj.department or ''
 
 
+class LabDetailMinimalSerializer(serializers.ModelSerializer):
+    """Reduced detail payload when requesting fields=minimal"""
+    head_professor_name = serializers.CharField(source='head_professor.name', read_only=True)
+    university_name = serializers.CharField(source='university.name', read_only=True)
+    department_name = serializers.CharField(source='university_department.department.name', read_only=True)
+    department_local_name = serializers.CharField(source='university_department.local_name', read_only=True)
+    research_group_name = serializers.CharField(source='research_group.name', read_only=True)
+
+    class Meta:
+        model = Lab
+        fields = [
+            'id',
+            'name',
+            'head_professor_name',
+            'university_name',
+            'department_name',
+            'department_local_name',
+            'research_group_name',
+            'description',
+            'website',
+            'lab_size',
+            'research_areas',
+            'tags',
+            'overall_rating',
+            'review_count',
+            'university_department',
+            'research_group',
+            'university',
+        ]
+
+
 class LabDetailSerializer(serializers.ModelSerializer):
     head_professor = ProfessorSerializer(read_only=True)
     head_professor_name = serializers.CharField(source='head_professor.name', read_only=True)
@@ -151,4 +182,3 @@ class LabDetailSerializer(serializers.ModelSerializer):
                 breakdown[category] = sum(ratings) / len(ratings)
 
         return breakdown
-
