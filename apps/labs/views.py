@@ -57,7 +57,10 @@ class LabViewSet(viewsets.ModelViewSet):
                 'research_group'
             ).prefetch_related(
                 'research_topics',
-                'recent_publications',
+                'recent_publications__authors',
+                'recent_publications__venues',
+                'recent_publications__research_areas',
+                'recent_publications__labs',
                 'recruitment_status',
                 'professors'  # Reverse relationship from Professor.lab
             )
@@ -86,6 +89,11 @@ class LabViewSet(viewsets.ModelViewSet):
         elif fields == 'compact':
             return LabCompactSerializer
         return LabListSerializer
+
+    @cache_response('LABS', timeout=60 * 15)
+    def retrieve(self, request, *args, **kwargs):
+        """Cache lab detail responses for 15 minutes"""
+        return super().retrieve(request, *args, **kwargs)
     
     @cache_response('LABS', timeout=60*60)  # Cache for 1 hour
     @action(detail=False, methods=['get'])

@@ -289,6 +289,11 @@ class ProfessorViewSet(viewsets.ModelViewSet):
             return ProfessorMinimalSerializer
         return ProfessorSerializer
 
+    @cache_response('PROFESSORS', timeout=60 * 15)
+    def retrieve(self, request, *args, **kwargs):
+        """Cache professor detail responses for 15 minutes"""
+        return super().retrieve(request, *args, **kwargs)
+
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
