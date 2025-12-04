@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import (
     Publication, Author, Venue, ResearchArea,
     PublicationAuthor, PublicationVenue, PublicationResearchArea,
-    CitationMetric, Collaboration, LabPublicationStats
+    PublicationProfessor, CitationMetric, Collaboration, LabPublicationStats
 )
 
 
@@ -96,6 +96,20 @@ class PublicationAuthorSerializer(serializers.ModelSerializer):
         ]
 
 
+class PublicationProfessorSerializer(serializers.ModelSerializer):
+    """논문-교수 관계 시리얼라이저"""
+    professor_name = serializers.CharField(source='professor.name', read_only=True)
+    professor_id = serializers.IntegerField(source='professor.id', read_only=True)
+    lab_name = serializers.CharField(source='affiliation_lab.name', read_only=True)
+
+    class Meta:
+        model = PublicationProfessor
+        fields = [
+            'professor_id', 'professor_name', 'role', 'author_order',
+            'affiliation', 'affiliation_lab', 'lab_name'
+        ]
+
+
 class PublicationVenueSerializer(serializers.ModelSerializer):
     """논문-학회 관계 시리얼라이저"""
     venue_name = serializers.CharField(source='venue.name', read_only=True)
@@ -120,6 +134,7 @@ class PublicationMinimalSerializer(serializers.ModelSerializer):
     primary_venue_name = serializers.SerializerMethodField()
     primary_venue_tier = serializers.SerializerMethodField()
     research_area_names = serializers.SerializerMethodField()
+    professor_names = serializers.SerializerMethodField()
 
     class Meta:
         model = Publication
@@ -127,7 +142,7 @@ class PublicationMinimalSerializer(serializers.ModelSerializer):
             'id', 'title', 'abstract', 'publication_year',
             'doi', 'arxiv_id', 'google_scholar_id', 'citation_count',
             'authors', 'primary_venue_name', 'primary_venue_tier',
-            'research_area_names', 'keywords', 'additional_notes',
+            'research_area_names', 'professor_names', 'keywords', 'additional_notes',
             'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
             'page_count', 'language', 'h_index_contribution'
         ]
@@ -175,6 +190,9 @@ class PublicationMinimalSerializer(serializers.ModelSerializer):
     def get_research_area_names(self, obj):
         return list(obj.research_areas.values_list('name', flat=True))
 
+    def get_professor_names(self, obj):
+        return list(obj.professors.values_list('name', flat=True))
+
 
 class PublicationListSerializer(serializers.ModelSerializer):
     """논문 목록용 간단한 시리얼라이저"""
@@ -184,6 +202,7 @@ class PublicationListSerializer(serializers.ModelSerializer):
     primary_venue_tier = serializers.SerializerMethodField()
     author_count = serializers.SerializerMethodField()
     research_area_names = serializers.SerializerMethodField()
+    professor_names = serializers.SerializerMethodField()
 
     class Meta:
         model = Publication
@@ -192,7 +211,7 @@ class PublicationListSerializer(serializers.ModelSerializer):
             'doi', 'arxiv_id', 'google_scholar_id', 'citation_count',
             'authors', 'first_author_name', 'author_count',
             'primary_venue_name', 'primary_venue_tier',
-            'research_area_names', 'keywords', 'additional_notes',
+            'research_area_names', 'professor_names', 'keywords', 'additional_notes',
             'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
             'page_count', 'language', 'is_open_access',
             'h_index_contribution', 'created_at', 'updated_at'
@@ -248,6 +267,9 @@ class PublicationListSerializer(serializers.ModelSerializer):
     def get_research_area_names(self, obj):
         return list(obj.research_areas.values_list('name', flat=True))
 
+    def get_professor_names(self, obj):
+        return list(obj.professors.values_list('name', flat=True))
+
 
 class PublicationDetailSerializer(serializers.ModelSerializer):
     """논문 상세 정보 시리얼라이저"""
@@ -268,6 +290,11 @@ class PublicationDetailSerializer(serializers.ModelSerializer):
     )
     labs_detail = serializers.SerializerMethodField()
     citation_history = serializers.SerializerMethodField()
+    professors_detail = PublicationProfessorSerializer(
+        source='publicationprofessor_set',
+        many=True,
+        read_only=True
+    )
 
     first_author = serializers.SerializerMethodField()
     corresponding_author = serializers.SerializerMethodField()
@@ -282,7 +309,7 @@ class PublicationDetailSerializer(serializers.ModelSerializer):
             'paper_url', 'code_url', 'dataset_url', 'video_url', 'slides_url',
             'page_count', 'language', 'is_open_access',
             'keywords', 'additional_notes',
-            'authors_detail', 'venues_detail', 'research_areas_detail', 'labs_detail',
+            'authors_detail', 'venues_detail', 'research_areas_detail', 'labs_detail', 'professors_detail',
             'first_author', 'corresponding_author', 'primary_venue',
             'citation_history', 'created_at', 'updated_at'
         ]

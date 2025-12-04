@@ -178,6 +178,12 @@ class Publication(models.Model):
     authors = models.ManyToManyField(Author, through='PublicationAuthor', related_name='publications')
     venues = models.ManyToManyField(Venue, through='PublicationVenue', related_name='publications')
     research_areas = models.ManyToManyField(ResearchArea, through='PublicationResearchArea', related_name='publications')
+    professors = models.ManyToManyField(
+        'universities.Professor',
+        through='PublicationProfessor',
+        related_name='publications',
+        blank=True
+    )
     labs = models.ManyToManyField('labs.Lab', related_name='publications', blank=True)
 
     # 메타데이터
@@ -286,6 +292,42 @@ class PublicationAuthor(models.Model):
 
     def __str__(self):
         return f"{self.author.name} ({self.author_order}) - {self.publication.title[:50]}"
+
+
+class PublicationProfessor(models.Model):
+    """논문-교수 연결"""
+    ROLE_CHOICES = [
+        ('pi', 'Principal Investigator'),
+        ('co_pi', 'Co-Principal Investigator'),
+        ('corresponding', 'Corresponding Author'),
+        ('first', 'First Author'),
+        ('last', 'Last Author'),
+        ('author', 'Author'),
+    ]
+
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    professor = models.ForeignKey('universities.Professor', on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='author')
+    author_order = models.PositiveIntegerField(null=True, blank=True)
+    affiliation = models.CharField(max_length=255, blank=True)
+    affiliation_lab = models.ForeignKey('labs.Lab', on_delete=models.SET_NULL, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'publication_professors'
+        unique_together = [
+            ('publication', 'professor'),
+            ('publication', 'author_order'),
+        ]
+        indexes = [
+            models.Index(fields=['professor']),
+            models.Index(fields=['role']),
+        ]
+        ordering = ['author_order', 'professor_id']
+
+    def __str__(self):
+        return f"{self.professor.name} ({self.role}) - {self.publication.title[:50]}"
 
 
 class PublicationResearchArea(models.Model):

@@ -29,6 +29,7 @@ class PublicationFilter(django_filters.FilterSet):
     # 저자 필터
     author = django_filters.NumberFilter(field_name='authors')
     first_author = django_filters.NumberFilter(method='filter_first_author')
+    professor = django_filters.NumberFilter(method='filter_professor')
 
     # 연구실 필터
     lab = django_filters.NumberFilter(field_name='labs')
@@ -156,6 +157,12 @@ class PublicationFilter(django_filters.FilterSet):
         """연구 분야 이름으로 필터링"""
         if value:
             return queryset.filter(research_areas__name__icontains=value)
+        return queryset
+
+    def filter_professor(self, queryset, name, value):
+        """특정 교수와 연결된 논문 필터링"""
+        if value:
+            return queryset.filter(publicationprofessor__professor_id=value).distinct()
         return queryset
 
 

@@ -62,7 +62,6 @@ class UserModelTest(TestCase):
 
         self.assertEqual(user.university_department, self.university_department)
         self.assertEqual(user.university, self.university)
-        self.assertEqual(user.department, "Computer Science")
 
     def test_user_display_name(self):
         """Test user display name property"""

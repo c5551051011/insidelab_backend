@@ -1,4 +1,5 @@
 # Migration to rename mock_interview_sessions to interview_sessions
+# This is now a no-op since 0003_initial creates the table directly with correct name
 
 from django.db import migrations
 
@@ -10,8 +11,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="ALTER TABLE mock_interview_sessions RENAME TO interview_sessions;",
-            reverse_sql="ALTER TABLE interview_sessions RENAME TO mock_interview_sessions;",
-        ),
+        # No-op: The table will be created with the correct name in 0003_initial
     ]

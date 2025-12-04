@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from .models import (
     Publication, Author, Venue, ResearchArea,
     CitationMetric, Collaboration, LabPublicationStats,
-    PublicationAuthor, PublicationVenue, PublicationResearchArea
+    PublicationAuthor, PublicationVenue, PublicationResearchArea, PublicationProfessor
 )
 from .serializers import (
     PublicationMinimalSerializer, PublicationListSerializer, PublicationDetailSerializer,
@@ -41,9 +41,14 @@ class PublicationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Publication.objects.select_related().prefetch_related(
-            'authors', 'venues', 'research_areas', 'labs',
+            'authors',
+            'venues',
+            'research_areas',
+            'labs',
+            'professors',
             'publicationauthor_set__author',
-            'publicationvenue_set__venue'
+            'publicationvenue_set__venue',
+            'publicationprofessor_set__professor',
         )
         return queryset
 
@@ -446,8 +451,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 교수님의 논문들 (연구실을 통한 연결)
+        # 교수님의 논문들 (직접 연결 + 연구실 연결)
         publications = self.get_queryset().filter(
+            Q(publicationprofessor__professor_id=professor_id) |
             Q(labs__professor_id=professor_id) |
             Q(authors__publications__labs__professor_id=professor_id)
         ).distinct()
@@ -593,7 +599,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
         """논문과 모든 관련 데이터를 한번에 생성"""
         from django.db import transaction
         from apps.labs.models import Lab
-        from apps.professors.models import Professor
+        from apps.universities.models import Professor
 
         data = request.data
 
@@ -682,7 +688,40 @@ class PublicationViewSet(viewsets.ModelViewSet):
                         affiliation_lab_id=author_data.get('lab_id')
                     )
 
-                # 4. 학회/저널 정보 처리
+                # 4. 교수 연결 (professors 배열 또는 professor_ids)
+                professors_payload = data.get('professors', [])
+                professor_ids = data.get('professor_ids', [])
+
+                # Allow simple integer list
+                if professor_ids and not professors_payload:
+                    professors_payload = [{'id': pid} for pid in professor_ids]
+
+                for order, professor_data in enumerate(professors_payload, start=1):
+                    professor_id = professor_data.get('id')
+                    if not professor_id:
+                        continue
+                    try:
+                        professor = Professor.objects.get(id=professor_id)
+                    except Professor.DoesNotExist:
+                        return Response(
+                            {'error': f'Professor with id {professor_id} not found'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    PublicationProfessor.objects.create(
+                        publication=publication,
+                        professor=professor,
+                        role=professor_data.get('role', 'author'),
+                        author_order=professor_data.get('order', order),
+                        affiliation=professor_data.get('affiliation', ''),
+                        affiliation_lab_id=professor_data.get('lab_id')
+                    )
+
+                    # If lab not explicitly linked, but professor has a lab, connect it for convenience
+                    if professor.lab and professor.lab_id not in lab_ids:
+                        publication.labs.add(professor.lab)
+
+                # 5. 학회/저널 정보 처리
                 venues_data = data.get('venues', [])
                 for venue_data in venues_data:
                     venue_name = venue_data.get('name')
@@ -710,7 +749,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
                         award_name=venue_data.get('award_name', ''),
                     )
 
-                # 5. 연구 분야 연결
+                # 6. 연구 분야 연결
                 research_areas = data.get('research_areas', [])
                 for area_name in research_areas:
                     area, created = ResearchArea.objects.get_or_create(
@@ -723,7 +762,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
                         relevance_score=1.0
                     )
 
-                # 6. 응답 데이터 생성
+                # 7. 응답 데이터 생성
                 serializer = PublicationDetailSerializer(publication)
                 return Response({
                     'message': 'Publication created successfully with all relations',
@@ -735,6 +774,54 @@ class PublicationViewSet(viewsets.ModelViewSet):
                 {'error': f'Failed to create publication: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(detail=True, methods=['post'])
+    def attach_professors(self, request, pk=None):
+        """기존 논문에 교수 관계 추가"""
+        from django.db import transaction
+        from apps.universities.models import Professor
+
+        try:
+            publication = Publication.objects.get(pk=pk)
+        except Publication.DoesNotExist:
+            return Response({'error': 'Publication not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        professors_payload = request.data.get('professors', [])
+        if not isinstance(professors_payload, list) or not professors_payload:
+            return Response({'error': 'professors must be a non-empty list'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                for order, professor_data in enumerate(professors_payload, start=1):
+                    professor_id = professor_data.get('id')
+                    if not professor_id:
+                        continue
+                    try:
+                        professor = Professor.objects.get(id=professor_id)
+                    except Professor.DoesNotExist:
+                        return Response(
+                            {'error': f'Professor with id {professor_id} not found'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    PublicationProfessor.objects.update_or_create(
+                        publication=publication,
+                        professor=professor,
+                        defaults={
+                            'role': professor_data.get('role', 'author'),
+                            'author_order': professor_data.get('order', order),
+                            'affiliation': professor_data.get('affiliation', ''),
+                            'affiliation_lab_id': professor_data.get('lab_id')
+                        }
+                    )
+
+                    if professor.lab:
+                        publication.labs.add(professor.lab)
+
+            serializer = PublicationDetailSerializer(publication)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # @method_decorator(cache_page(60 * 60 * 6), name='list')  # Cache list for 6 hours
