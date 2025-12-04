@@ -32,8 +32,6 @@ class User(AbstractUser):
         ],
         blank=True
     )
-    # Legacy department field - will be populated from university_department for backward compatibility
-    department = models.CharField(max_length=200, blank=True)
     lab_name = models.CharField(max_length=300, blank=True)
 
     
@@ -100,11 +98,8 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         # Auto-populate legacy fields from university_department for backward compatibility
-        if self.university_department:
-            if not self.university:
-                self.university = self.university_department.university
-            if not self.department:
-                self.department = self.university_department.department.name
+        if self.university_department and not self.university:
+            self.university = self.university_department.university
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -197,5 +192,4 @@ class UserResearchProfile(models.Model):
 
     def __str__(self):
         return f"Research profile for {self.user.display_name}"
-
 
