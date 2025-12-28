@@ -4,6 +4,21 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 import json
 
 
+class SafeJSONField(models.JSONField):
+    """JSONField that safely handles existing list data from ArrayField"""
+
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+
+        # If value is already a list (from ArrayField migration), return as is
+        if isinstance(value, list):
+            return value
+
+        # Otherwise, use normal JSON parsing
+        return super().from_db_value(value, expression, connection)
+
+
 class ResearchArea(models.Model):
     """연구 분야 (계층적 구조)"""
     name = models.CharField(max_length=255)
@@ -162,7 +177,7 @@ class Publication(models.Model):
     is_open_access = models.BooleanField(default=False)
 
     # 키워드 및 추가 정보
-    keywords = models.JSONField(
+    keywords = SafeJSONField(
         blank=True,
         default=list,
         help_text="논문 키워드 목록 (JSON 배열)"
