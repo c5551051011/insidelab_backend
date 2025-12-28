@@ -179,7 +179,7 @@ class ReviewRatingModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=professor
+            head_professor=professor
         )
         self.user = User.objects.create_user(
             username="testuser",
@@ -294,7 +294,7 @@ class ReviewHelpfulModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=professor
+            head_professor=professor
         )
         self.reviewer = User.objects.create_user(
             username="reviewer",
@@ -372,7 +372,7 @@ class ReviewIntegrationTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=professor
+            head_professor=professor
         )
         self.user = User.objects.create_user(
             username="testuser",

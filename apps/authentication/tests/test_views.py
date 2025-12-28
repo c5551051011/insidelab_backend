@@ -179,7 +179,7 @@ class UserLabInterestTestCase(APITestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=self.professor
+            head_professor=self.professor
         )
 
         self.interest_list_url = reverse('userlabinterest-list')

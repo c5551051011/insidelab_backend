@@ -461,7 +461,7 @@ class UserLabInterestViewSet(viewsets.ModelViewSet):
                 'id': interest.id,
                 'lab_id': interest.lab.id,
                 'lab_name': interest.lab.name,
-                'lab_professor': interest.lab.professor.name,
+                'lab_professor': interest.lab.head_professor.name if interest.lab.head_professor else '',
                 'lab_rating': float(interest.lab.overall_rating),
                 'created_at': interest.created_at
             })

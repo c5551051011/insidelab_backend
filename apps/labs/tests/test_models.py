@@ -43,7 +43,7 @@ class LabModelTest(TestCase):
             lab_size=15
         )
         self.assertEqual(lab.name, "AI Research Lab")
-        self.assertEqual(lab.professor, self.professor)
+        self.assertEqual(lab.head_professor, self.professor)
         self.assertEqual(lab.lab_size, 15)
         self.assertEqual(lab.overall_rating, 0)
         self.assertEqual(lab.review_count, 0)
@@ -116,7 +116,7 @@ class ResearchTopicModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=professor
+            head_professor=professor
         )
 
     def test_create_research_topic(self):
@@ -169,7 +169,7 @@ class PublicationModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=professor
+            head_professor=professor
         )
 
     def test_create_publication(self):
@@ -230,7 +230,7 @@ class RecruitmentStatusModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=professor
+            head_professor=professor
         )
 
     def test_create_recruitment_status(self):
