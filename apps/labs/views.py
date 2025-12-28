@@ -18,6 +18,11 @@ from .serializers import (
 )
 from .filters import LabFilter
 from apps.utils.cache import cache_response, CacheManager
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from .swagger_schemas import recruitment_status_request, recruitment_status_response, error_response
 
 class LabViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
@@ -152,3 +157,140 @@ class LabViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(labs, many=True)
         return Response(serializer.data)
+
+
+class RecruitmentStatusViewSet(viewsets.ModelViewSet):
+    """
+    연구실 모집 현황 관리 API
+
+    연구실의 모집 현황(PhD, Postdoc, Intern)을 독립적으로 관리할 수 있는 API입니다.
+    Lab 전체를 수정하지 않고 모집 현황만 업데이트할 수 있습니다.
+
+    ## 엔드포인트
+    - 목록 조회: GET /api/v1/labs/recruitment/
+    - 상세 조회: GET /api/v1/labs/recruitment/{lab_id}/
+    - 생성: POST /api/v1/labs/recruitment/
+    - 전체 수정: PUT /api/v1/labs/recruitment/{lab_id}/
+    - 부분 수정: PATCH /api/v1/labs/recruitment/{lab_id}/
+    - 삭제: DELETE /api/v1/labs/recruitment/{lab_id}/
+
+    ## 필터링
+    - ?recruiting_phd=true : PhD 모집 중인 연구실만
+    - ?recruiting_postdoc=true : Postdoc 모집 중인 연구실만
+    - ?recruiting_intern=true : Intern 모집 중인 연구실만
+    """
+    queryset = RecruitmentStatus.objects.select_related('lab').all()
+    serializer_class = RecruitmentStatusSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = 'lab_id'  # Use lab_id instead of pk for easier access
+
+    def get_queryset(self):
+        """Optionally filter by recruiting status"""
+        queryset = super().get_queryset()
+
+        # Filter by position type if provided
+        recruiting_phd = self.request.query_params.get('recruiting_phd')
+        recruiting_postdoc = self.request.query_params.get('recruiting_postdoc')
+        recruiting_intern = self.request.query_params.get('recruiting_intern')
+
+        if recruiting_phd is not None:
+            queryset = queryset.filter(is_recruiting_phd=recruiting_phd.lower() == 'true')
+        if recruiting_postdoc is not None:
+            queryset = queryset.filter(is_recruiting_postdoc=recruiting_postdoc.lower() == 'true')
+        if recruiting_intern is not None:
+            queryset = queryset.filter(is_recruiting_intern=recruiting_intern.lower() == 'true')
+
+        return queryset
+
+    @swagger_auto_schema(
+        operation_summary="모집 현황 생성",
+        operation_description="새로운 연구실의 모집 현황을 생성합니다.",
+        request_body=recruitment_status_request,
+        responses={
+            201: openapi.Response('생성 성공', recruitment_status_response),
+            400: openapi.Response('잘못된 요청', error_response),
+            401: openapi.Response('인증 필요'),
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        """Create recruitment status for a lab"""
+        lab_id = request.data.get('lab_id') or request.data.get('lab')
+
+        if not lab_id:
+            return Response(
+                {'error': 'lab_id or lab field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if lab exists
+        lab = get_object_or_404(Lab, id=lab_id)
+
+        # Check if recruitment status already exists
+        if hasattr(lab, 'recruitment_status'):
+            return Response(
+                {'error': 'Recruitment status already exists for this lab. Use PUT or PATCH to update.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Clear cache when creating
+        CacheManager.invalidate_lab_caches(lab_id)
+
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="모집 현황 전체 수정",
+        operation_description="연구실의 모집 현황을 전체 수정합니다. 모든 필드를 포함해야 합니다.",
+        request_body=recruitment_status_request,
+        responses={
+            200: openapi.Response('수정 성공', recruitment_status_response),
+            400: openapi.Response('잘못된 요청', error_response),
+            401: openapi.Response('인증 필요'),
+            404: openapi.Response('연구실을 찾을 수 없음', error_response),
+        }
+    )
+    def update(self, request, *args, **kwargs):
+        """Update recruitment status"""
+        # Clear cache when updating
+        lab_id = kwargs.get('lab_id')
+        if lab_id:
+            CacheManager.invalidate_lab_caches(lab_id)
+
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="모집 현황 부분 수정",
+        operation_description="연구실의 모집 현황을 부분 수정합니다. 수정할 필드만 포함하면 됩니다.",
+        request_body=recruitment_status_request,
+        responses={
+            200: openapi.Response('수정 성공', recruitment_status_response),
+            400: openapi.Response('잘못된 요청', error_response),
+            401: openapi.Response('인증 필요'),
+            404: openapi.Response('연구실을 찾을 수 없음', error_response),
+        }
+    )
+    def partial_update(self, request, *args, **kwargs):
+        """Partially update recruitment status"""
+        # Clear cache when updating
+        lab_id = kwargs.get('lab_id')
+        if lab_id:
+            CacheManager.invalidate_lab_caches(lab_id)
+
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="모집 현황 삭제",
+        operation_description="연구실의 모집 현황을 삭제합니다.",
+        responses={
+            204: openapi.Response('삭제 성공'),
+            401: openapi.Response('인증 필요'),
+            404: openapi.Response('연구실을 찾을 수 없음', error_response),
+        }
+    )
+    def destroy(self, request, *args, **kwargs):
+        """Delete recruitment status"""
+        # Clear cache when deleting
+        lab_id = kwargs.get('lab_id')
+        if lab_id:
+            CacheManager.invalidate_lab_caches(lab_id)
+
+        return super().destroy(request, *args, **kwargs)

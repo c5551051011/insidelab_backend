@@ -17,10 +17,16 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class RecruitmentStatusSerializer(serializers.ModelSerializer):
+    lab_name = serializers.CharField(source='lab.name', read_only=True)
+
     class Meta:
         model = RecruitmentStatus
-        fields = ['is_recruiting_phd', 'is_recruiting_postdoc', 
+        fields = ['id', 'lab', 'lab_name', 'is_recruiting_phd', 'is_recruiting_postdoc',
                  'is_recruiting_intern', 'notes', 'last_updated']
+        read_only_fields = ['last_updated']
+        extra_kwargs = {
+            'lab': {'write_only': True}
+        }
 
 
 class LabMinimalSerializer(serializers.ModelSerializer):
