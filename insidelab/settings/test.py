@@ -16,7 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
-# Test Database Configuration (Use existing SQLite database)
+# Test Database Configuration (Use SQLite for faster tests)
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

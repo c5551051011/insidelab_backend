@@ -1,7 +1,6 @@
 # apps/publications/models.py
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.postgres.fields import ArrayField
 import json
 
 
@@ -163,11 +162,10 @@ class Publication(models.Model):
     is_open_access = models.BooleanField(default=False)
 
     # 키워드 및 추가 정보
-    keywords = ArrayField(
-        models.CharField(max_length=100),
+    keywords = models.JSONField(
         blank=True,
         default=list,
-        help_text="논문 키워드 목록"
+        help_text="논문 키워드 목록 (JSON 배열)"
     )
     additional_notes = models.TextField(
         blank=True,
