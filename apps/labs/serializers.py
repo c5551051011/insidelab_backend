@@ -18,15 +18,26 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 class RecruitmentStatusSerializer(serializers.ModelSerializer):
     lab_name = serializers.CharField(source='lab.name', read_only=True)
+    professor_name = serializers.CharField(source='lab.head_professor.name', read_only=True)
+    university_name = serializers.SerializerMethodField()
 
     class Meta:
         model = RecruitmentStatus
-        fields = ['id', 'lab', 'lab_name', 'is_recruiting_phd', 'is_recruiting_postdoc',
+        fields = ['id', 'lab', 'lab_name', 'professor_name', 'university_name',
+                 'is_recruiting_phd', 'is_recruiting_postdoc',
                  'is_recruiting_intern', 'notes', 'last_updated']
         read_only_fields = ['last_updated']
         extra_kwargs = {
             'lab': {'write_only': True}
         }
+
+    def get_university_name(self, obj):
+        """Get university name prioritizing university_department over legacy university"""
+        if obj.lab.university_department:
+            return obj.lab.university_department.university.name
+        elif obj.lab.university:
+            return obj.lab.university.name
+        return None
 
 
 class LabMinimalSerializer(serializers.ModelSerializer):

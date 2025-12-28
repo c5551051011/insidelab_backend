@@ -179,7 +179,12 @@ class RecruitmentStatusViewSet(viewsets.ModelViewSet):
     - ?recruiting_postdoc=true : Postdoc 모집 중인 연구실만
     - ?recruiting_intern=true : Intern 모집 중인 연구실만
     """
-    queryset = RecruitmentStatus.objects.select_related('lab').all()
+    queryset = RecruitmentStatus.objects.select_related(
+        'lab',
+        'lab__head_professor',
+        'lab__university',
+        'lab__university_department__university'
+    ).all()
     serializer_class = RecruitmentStatusSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'lab_id'  # Use lab_id instead of pk for easier access

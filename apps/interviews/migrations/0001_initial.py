@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('publications', '0011_use_safe_jsonfield_for_keywords'),
+        ('publications', '0008_alter_researcharea_name'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('labs', '0008_remove_lab_professor'),
     ]
