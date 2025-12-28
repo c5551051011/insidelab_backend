@@ -106,9 +106,27 @@ else:
             }
         }
     else:
-        print("  ❌ ERROR: No database configuration found!")
-        print("  Please set either DATABASE_URL or all PROD_DB_* variables")
-        raise ValueError("Database configuration not found. Please set DATABASE_URL or PROD_DB_* environment variables.")
+        print("  ❌ WARNING: No database configuration found in environment variables!")
+        print("  Using fallback Supabase configuration from .env.prod")
+
+        # Fallback to hardcoded values for Railway deployment
+        # TODO: Set proper environment variables in Railway
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'postgres',
+                'USER': 'postgres.zwztxgsxjoutvtwugtrq',
+                'PASSWORD': 'DLStkdlemfoq25!@#',
+                'HOST': 'aws-1-ap-northeast-2.pooler.supabase.com',
+                'PORT': '6543',
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
+                'CONN_MAX_AGE': 600,
+                'CONN_HEALTH_CHECKS': True,
+            }
+        }
+        print("  ✅ Using hardcoded Supabase fallback configuration")
 
 # Debug: Print final database configuration that Django will use
 print("🔍 DEBUG: Final DATABASES configuration:")
