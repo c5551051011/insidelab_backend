@@ -12,8 +12,19 @@ print("🔍 DEBUG: Django environment configuration:")
 django_env = config('DJANGO_ENVIRONMENT', default='NOT_SET')
 print(f"  DJANGO_ENVIRONMENT: {django_env}")
 
-# Print all environment variables that contain 'DB' or 'PROD'
-print("🔍 DEBUG: All DB and PROD related environment variables:")
+# Print ALL environment variables to debug Railway environment
+print("🔍 DEBUG: All environment variables (first 50):")
+env_vars = list(os.environ.items())
+for i, (key, value) in enumerate(env_vars[:50]):
+    if 'PASSWORD' in key.upper() or 'SECRET' in key.upper() or 'KEY' in key.upper():
+        if value:
+            print(f"  {key}: {value[:3]}***")
+        else:
+            print(f"  {key}: (empty)")
+    else:
+        print(f"  {key}: {value}")
+
+print("🔍 DEBUG: DB and PROD related environment variables:")
 for key, value in os.environ.items():
     if 'DB' in key or 'PROD' in key:
         if 'PASSWORD' in key and value:
@@ -37,7 +48,23 @@ ALLOWED_HOSTS = [
 print("🔍 DEBUG: Database environment variables:")
 
 # Try to get DATABASE_URL first (Railway standard)
-database_url = config('DATABASE_URL', default=None)
+# Check common Railway database environment variable names
+potential_db_urls = [
+    'DATABASE_URL',
+    'POSTGRES_URL',
+    'POSTGRESQL_URL',
+    'DB_URL'
+]
+
+database_url = None
+for var_name in potential_db_urls:
+    database_url = config(var_name, default=None)
+    if database_url:
+        print(f"  ✅ Found database URL in {var_name}")
+        break
+
+if not database_url:
+    print("  ❌ No DATABASE_URL variants found, checking individual variables...")
 
 if database_url:
     # Use dj-database-url to parse DATABASE_URL
