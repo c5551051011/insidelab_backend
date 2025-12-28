@@ -26,11 +26,7 @@ class Migration(migrations.Migration):
             ),
         ),
 
-        # Remove the old unique constraint on name alone
-        migrations.RunSQL(
-            "ALTER TABLE research_areas DROP CONSTRAINT IF EXISTS research_areas_name_key;",
-            reverse_sql="ALTER TABLE research_areas ADD CONSTRAINT research_areas_name_key UNIQUE (name);",
-        ),
+        # Remove the old unique constraint on name alone - handled by AlterUniqueTogether
 
         # Add new unique constraint on name and department
         migrations.AlterUniqueTogether(
