@@ -5,8 +5,8 @@ This file contains settings specific to running tests.
 
 from .base import *
 
-# Remove problematic apps for testing
-INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'apps.publications']
+# Keep all apps for testing to avoid model relation errors
+# INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'apps.publications']
 
 # Use test URL configuration
 ROOT_URLCONF = 'insidelab.urls_test'
