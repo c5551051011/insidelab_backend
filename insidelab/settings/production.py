@@ -32,43 +32,56 @@ ALLOWED_HOSTS = [
     'localhost',  # For health checks
 ]
 
-# Production Database Configuration (Supabase) - No fallbacks
+# Production Database Configuration
 # Debug: Print all database environment variables
 print("🔍 DEBUG: Database environment variables:")
-db_name = config('PROD_DB_NAME')
-db_user = config('PROD_DB_USER')
-db_password = config('PROD_DB_PASSWORD')
-db_host = config('PROD_DB_HOST')
-db_port = config('PROD_DB_PORT')
 
-print(f"  PROD_DB_NAME: {db_name}")
-print(f"  PROD_DB_USER: {db_user}")
-print(f"  PROD_DB_PASSWORD: {db_password[:3]}*** (length: {len(db_password)})")
-print(f"  PROD_DB_HOST: {db_host}")
-print(f"  PROD_DB_PORT: {db_port}")
+# Try to get DATABASE_URL first (Railway standard)
+database_url = config('DATABASE_URL', default=None)
 
-# Also check if regular DB_ variables are set (they shouldn't be in production)
-regular_db_vars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']
-for var in regular_db_vars:
-    value = os.environ.get(var, 'NOT_SET')
-    if value != 'NOT_SET':
-        print(f"  ⚠️ WARNING: Regular {var} is set: {value}")
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': db_name,
-        'USER': db_user,
-        'PASSWORD': db_password,
-        'HOST': db_host,
-        'PORT': db_port,
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
-        'CONN_MAX_AGE': 600,
-        'CONN_HEALTH_CHECKS': True,
+if database_url:
+    # Use dj-database-url to parse DATABASE_URL
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(database_url, conn_max_age=600, ssl_require=True)
     }
-}
+    print(f"  ✅ Using DATABASE_URL")
+    print(f"  DATABASE_URL: {database_url[:20]}...{database_url[-20:]}")
+else:
+    # Fallback to individual PROD_DB_* variables (for custom Supabase setup)
+    db_name = config('PROD_DB_NAME', default=None)
+    db_user = config('PROD_DB_USER', default=None)
+    db_password = config('PROD_DB_PASSWORD', default=None)
+    db_host = config('PROD_DB_HOST', default=None)
+    db_port = config('PROD_DB_PORT', default='5432')
+
+    if all([db_name, db_user, db_password, db_host]):
+        print(f"  ✅ Using individual PROD_DB_* variables")
+        print(f"  PROD_DB_NAME: {db_name}")
+        print(f"  PROD_DB_USER: {db_user}")
+        print(f"  PROD_DB_PASSWORD: {db_password[:3]}*** (length: {len(db_password)})")
+        print(f"  PROD_DB_HOST: {db_host}")
+        print(f"  PROD_DB_PORT: {db_port}")
+
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': db_name,
+                'USER': db_user,
+                'PASSWORD': db_password,
+                'HOST': db_host,
+                'PORT': db_port,
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
+                'CONN_MAX_AGE': 600,
+                'CONN_HEALTH_CHECKS': True,
+            }
+        }
+    else:
+        print("  ❌ ERROR: No database configuration found!")
+        print("  Please set either DATABASE_URL or all PROD_DB_* variables")
+        raise ValueError("Database configuration not found. Please set DATABASE_URL or PROD_DB_* environment variables.")
 
 # Debug: Print final database configuration that Django will use
 print("🔍 DEBUG: Final DATABASES configuration:")

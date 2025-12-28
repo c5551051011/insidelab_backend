@@ -4,7 +4,11 @@ import sys
 
 def main():
     # Environment-based settings selection
-    environment = os.environ.get('DJANGO_ENVIRONMENT', 'development')
+    try:
+        from decouple import config
+        environment = config('DJANGO_ENVIRONMENT', default='development')
+    except ImportError:
+        environment = os.environ.get('DJANGO_ENVIRONMENT', 'development')
 
     if environment == 'production':
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'insidelab.settings.production')
