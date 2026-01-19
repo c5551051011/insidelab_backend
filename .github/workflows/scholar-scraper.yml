@@ -1,0 +1,55 @@
+name: Google Scholar Scraper
+
+on:
+  schedule:
+    # 매주 월요일 오전 2시 (UTC)
+    - cron: '0 2 * * 1'
+
+  # 수동 실행 가능
+  workflow_dispatch:
+    inputs:
+      professor_limit:
+        description: 'Number of professors to scrape'
+        required: false
+        default: '10'
+
+jobs:
+  scrape-publications:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+          BACKEND_API_URL: ${{ secrets.BACKEND_API_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python scraper/main.py
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: scraping-logs
+          path: logs/
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{"text": "❌ Scholar scraping failed! Check GitHub Actions logs."}'
