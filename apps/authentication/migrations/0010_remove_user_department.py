@@ -4,14 +4,28 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+    """
+    This is a no-op migration to sync Django's migration state.
+    The department field was already removed in 0009 using RunPython.
+    This migration only updates Django's model state without touching the database.
+    """
 
     dependencies = [
         ('authentication', '0009_remove_user_department'),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='user',
-            name='department',
+        # Use SeparateDatabaseAndState to only update Django's state
+        # without executing any actual database operations
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.RemoveField(
+                    model_name='user',
+                    name='department',
+                ),
+            ],
+            database_operations=[
+                # No database operations - field already removed in 0009
+            ],
         ),
     ]
