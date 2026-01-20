@@ -94,6 +94,7 @@ class ReviewModelTest(TestCase):
     def test_create_review(self):
         """Test creating a review"""
         review = Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.user,
             position='PhD Student',
@@ -103,6 +104,7 @@ class ReviewModelTest(TestCase):
             pros=["Good mentorship", "Interesting projects"],
             cons=["Long hours"]
         )
+        self.assertEqual(review.professor, self.professor)
         self.assertEqual(review.lab, self.lab)
         self.assertEqual(review.user, self.user)
         self.assertEqual(review.rating, Decimal('4.5'))
@@ -110,8 +112,9 @@ class ReviewModelTest(TestCase):
         self.assertEqual(len(review.cons), 1)
 
     def test_review_unique_together(self):
-        """Test user can only review a lab once"""
+        """Test user can only review a professor once"""
         Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.user,
             position='PhD Student',
@@ -121,6 +124,7 @@ class ReviewModelTest(TestCase):
         )
         with self.assertRaises(Exception):
             Review.objects.create(
+                professor=self.professor,
                 lab=self.lab,
                 user=self.user,
                 position='PhD Student',
@@ -132,6 +136,7 @@ class ReviewModelTest(TestCase):
     def test_review_default_status(self):
         """Test review has default status of active"""
         review = Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.user,
             position='PhD Student',
@@ -146,6 +151,7 @@ class ReviewModelTest(TestCase):
     def test_review_str_representation(self):
         """Test review string representation"""
         review = Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.user,
             position='PhD Student',
@@ -153,7 +159,7 @@ class ReviewModelTest(TestCase):
             rating=Decimal('4.0'),
             review_text='Test'
         )
-        expected = f"Review for {self.lab.name} by {self.user.email}"
+        expected = f"Review for {self.professor.name} in {self.lab.name} by {self.user.email}"
         self.assertEqual(str(review), expected)
 
 
@@ -173,13 +179,13 @@ class ReviewRatingModelTest(TestCase):
             university=university,
             department=department
         )
-        professor = Professor.objects.create(
+        self.professor = Professor.objects.create(
             name="Dr. Test",
             university_department=uni_dept
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            head_professor=professor
+            head_professor=self.professor
         )
         self.user = User.objects.create_user(
             username="testuser",
@@ -187,6 +193,7 @@ class ReviewRatingModelTest(TestCase):
             password="testpass123"
         )
         self.review = Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.user,
             position='PhD Student',
@@ -288,13 +295,13 @@ class ReviewHelpfulModelTest(TestCase):
             university=university,
             department=department
         )
-        professor = Professor.objects.create(
+        self.professor = Professor.objects.create(
             name="Dr. Test",
             university_department=uni_dept
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            head_professor=professor
+            head_professor=self.professor
         )
         self.reviewer = User.objects.create_user(
             username="reviewer",
@@ -307,6 +314,7 @@ class ReviewHelpfulModelTest(TestCase):
             password="testpass123"
         )
         self.review = Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.reviewer,
             position='PhD Student',
@@ -366,13 +374,13 @@ class ReviewIntegrationTest(TestCase):
             university=university,
             department=department
         )
-        professor = Professor.objects.create(
+        self.professor = Professor.objects.create(
             name="Dr. Test",
             university_department=uni_dept
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            head_professor=professor
+            head_professor=self.professor
         )
         self.user = User.objects.create_user(
             username="testuser",
@@ -400,6 +408,7 @@ class ReviewIntegrationTest(TestCase):
     def test_review_with_multiple_category_ratings(self):
         """Test creating review with multiple category ratings"""
         review = Review.objects.create(
+            professor=self.professor,
             lab=self.lab,
             user=self.user,
             position='PhD Student',
