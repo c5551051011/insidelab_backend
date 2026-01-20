@@ -83,7 +83,7 @@ class ReviewModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=self.professor
+            head_professor=self.professor
         )
         self.user = User.objects.create_user(
             username="testuser",
