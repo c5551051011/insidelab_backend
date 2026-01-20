@@ -81,9 +81,15 @@ def cache_response(cache_type, timeout=None, vary_on_user=False):
 
 def invalidate_cache_pattern(pattern):
     """Invalidate all cache keys matching a pattern"""
-    from django_redis import get_redis_connection
+    # Check if we're using a cache backend that supports pattern invalidation
+    cache_backend = settings.CACHES.get('default', {}).get('BACKEND', '')
+
+    # Skip invalidation for dummy cache or unsupported backends
+    if 'dummy' in cache_backend.lower():
+        return 0
 
     try:
+        from django_redis import get_redis_connection
         redis_conn = get_redis_connection("default")
         keys = redis_conn.keys(f"insidelab:1:{pattern}*")
         if keys:
@@ -91,7 +97,9 @@ def invalidate_cache_pattern(pattern):
             return len(keys)
         return 0
     except Exception as e:
-        print(f"Cache invalidation error: {e}")
+        # Silently skip for unsupported backends (e.g., DummyCache in tests)
+        if 'does not support this feature' not in str(e):
+            print(f"Cache invalidation error: {e}")
         return 0
 
 
