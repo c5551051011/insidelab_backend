@@ -38,7 +38,7 @@ class LabModelTest(TestCase):
         """Test creating a lab"""
         lab = Lab.objects.create(
             name="AI Research Lab",
-            professor=self.professor,
+            head_professor=self.professor,
             description="Leading AI research laboratory",
             lab_size=15
         )
@@ -52,7 +52,7 @@ class LabModelTest(TestCase):
         """Test lab auto-populates university department from professor"""
         lab = Lab.objects.create(
             name="Test Lab",
-            professor=self.professor
+            head_professor=self.professor
         )
         lab.save()
         self.assertEqual(lab.university_department, self.uni_dept)
@@ -69,7 +69,7 @@ class LabModelTest(TestCase):
 
         lab = Lab.objects.create(
             name="ML Lab",
-            professor=self.professor
+            head_professor=self.professor
         )
         self.assertEqual(lab.research_group, research_group)
 
@@ -77,7 +77,7 @@ class LabModelTest(TestCase):
         """Test lab with research areas and tags"""
         lab = Lab.objects.create(
             name="Test Lab",
-            professor=self.professor,
+            head_professor=self.professor,
             research_areas=["Machine Learning", "Computer Vision"],
             tags=["AI", "Deep Learning"]
         )
@@ -88,7 +88,7 @@ class LabModelTest(TestCase):
         """Test lab string representation"""
         lab = Lab.objects.create(
             name="Test Lab",
-            professor=self.professor
+            head_professor=self.professor
         )
         expected = f"Test Lab - {self.professor.name}"
         self.assertEqual(str(lab), expected)
@@ -281,7 +281,7 @@ class LabCategoryAverageModelTest(TestCase):
         )
         self.lab = Lab.objects.create(
             name="Test Lab",
-            professor=self.professor
+            head_professor=self.professor
         )
         # Use get_or_create to get existing category from migration
         self.category, _ = RatingCategory.objects.get_or_create(
