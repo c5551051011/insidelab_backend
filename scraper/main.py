@@ -49,6 +49,27 @@ class ScholarScraper:
             'total_publications': 0
         }
 
+    @staticmethod
+    def extract_scholar_id(google_scholar_url: str) -> Optional[str]:
+        """Google Scholar URL에서 scholar_id 추출
+
+        Examples:
+            https://scholar.google.com/citations?user=ABC123&hl=en -> ABC123
+            https://scholar.google.co.kr/citations?user=XYZ789 -> XYZ789
+        """
+        if not google_scholar_url:
+            return None
+
+        try:
+            # URL에서 user= 파라미터 값 추출
+            if 'user=' in google_scholar_url:
+                scholar_id = google_scholar_url.split('user=')[1].split('&')[0]
+                return scholar_id.strip() if scholar_id else None
+        except Exception as e:
+            logger.warning(f"⚠️  Failed to extract scholar_id from URL: {google_scholar_url} - {e}")
+
+        return None
+
     def get_professors(self) -> List[Dict]:
         """Backend API에서 교수 목록 가져오기"""
         try:
@@ -69,15 +90,17 @@ class ScholarScraper:
 
             logger.info(f"📊 Total professors from API: {len(all_professors)}")
 
-            # Filter for professors with scholar_id (non-empty string)
-            professors = [p for p in all_professors if p.get('scholar_id', '').strip()][:PROFESSOR_LIMIT]
+            # Filter for professors with google_scholar_url (non-empty string)
+            professors = [p for p in all_professors if p.get('google_scholar_url', '').strip()][:PROFESSOR_LIMIT]
 
-            logger.info(f"✅ Fetched {len(professors)} professors with scholar_id from API")
+            logger.info(f"✅ Fetched {len(professors)} professors with google_scholar_url from API")
 
-            # Debug: Show scholar_ids found
+            # Debug: Show Google Scholar URLs found
             if professors:
                 for p in professors[:5]:  # Show first 5
-                    logger.info(f"  - {p.get('name', 'Unknown')}: {p.get('scholar_id', 'N/A')}")
+                    url = p.get('google_scholar_url', 'N/A')
+                    scholar_id = self.extract_scholar_id(url)
+                    logger.info(f"  - {p.get('name', 'Unknown')}: {url} (ID: {scholar_id})")
 
             return professors
 
@@ -196,13 +219,16 @@ class ScholarScraper:
         """단일 교수 처리"""
         professor_id = professor['id']
         professor_name = professor['name']
-        scholar_id = professor.get('scholar_id')
+        google_scholar_url = professor.get('google_scholar_url', '')
+
+        # Google Scholar URL에서 scholar_id 추출
+        scholar_id = self.extract_scholar_id(google_scholar_url)
 
         if not scholar_id:
-            logger.warning(f"⚠️  Professor {professor_name} has no scholar_id")
+            logger.warning(f"⚠️  Professor {professor_name} has no valid scholar_id in URL: {google_scholar_url}")
             return
 
-        logger.info(f"📚 Processing: {professor_name} ({professor.get('university_name', 'Unknown')})")
+        logger.info(f"📚 Processing: {professor_name} ({professor.get('university_name', 'Unknown')}) - Scholar ID: {scholar_id}")
 
         # Google Scholar 스크래핑
         scraped_data = self.scrape_professor_publications(scholar_id)
