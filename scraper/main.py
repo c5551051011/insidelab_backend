@@ -57,7 +57,16 @@ class ScholarScraper:
             response = requests.get(url, headers=self.headers, timeout=30)
             response.raise_for_status()
 
-            all_professors = response.json()
+            data = response.json()
+            # Handle paginated response
+            if isinstance(data, dict) and 'results' in data:
+                all_professors = data['results']
+            elif isinstance(data, list):
+                all_professors = data
+            else:
+                logger.error(f"❌ Unexpected API response format: {type(data)}")
+                return []
+
             # Filter for professors with scholar_id
             professors = [p for p in all_professors if p.get('scholar_id')][:PROFESSOR_LIMIT]
 
