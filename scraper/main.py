@@ -67,10 +67,18 @@ class ScholarScraper:
                 logger.error(f"❌ Unexpected API response format: {type(data)}")
                 return []
 
-            # Filter for professors with scholar_id
-            professors = [p for p in all_professors if p.get('scholar_id')][:PROFESSOR_LIMIT]
+            logger.info(f"📊 Total professors from API: {len(all_professors)}")
+
+            # Filter for professors with scholar_id (non-empty string)
+            professors = [p for p in all_professors if p.get('scholar_id', '').strip()][:PROFESSOR_LIMIT]
 
             logger.info(f"✅ Fetched {len(professors)} professors with scholar_id from API")
+
+            # Debug: Show scholar_ids found
+            if professors:
+                for p in professors[:5]:  # Show first 5
+                    logger.info(f"  - {p.get('name', 'Unknown')}: {p.get('scholar_id', 'N/A')}")
+
             return professors
 
         except Exception as e:
@@ -255,6 +263,10 @@ class ScholarScraper:
         """메인 실행 함수"""
         logger.info("=" * 60)
         logger.info("🚀 Starting Google Scholar Scraper")
+        logger.info("=" * 60)
+        logger.info(f"📍 Backend API URL: {BACKEND_API_URL}")
+        logger.info(f"📍 Professor Limit: {PROFESSOR_LIMIT}")
+        logger.info(f"📍 Max Publications: {MAX_PUBLICATIONS}")
         logger.info("=" * 60)
 
         # 교수 목록 가져오기
