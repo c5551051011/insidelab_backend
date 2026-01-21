@@ -14,6 +14,9 @@ from datetime import datetime
 from scholarly import scholarly
 from typing import List, Dict, Optional
 
+# logs 디렉토리 생성 (로깅 설정보다 먼저 실행)
+os.makedirs('logs', exist_ok=True)
+
 # 로깅 설정
 logging.basicConfig(
     level=logging.INFO,
@@ -279,9 +282,6 @@ class ScholarScraper:
 
 
 if __name__ == '__main__':
-    # logs 디렉토리 생성
-    os.makedirs('logs', exist_ok=True)
-
     try:
         scraper = ScholarScraper()
         scraper.run()
