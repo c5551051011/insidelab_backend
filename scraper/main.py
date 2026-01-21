@@ -52,7 +52,7 @@ class ScholarScraper:
     def get_professors(self) -> List[Dict]:
         """Backend API에서 교수 목록 가져오기"""
         try:
-            url = f"{BACKEND_API_URL}/api/professors"
+            url = f"{BACKEND_API_URL}/api/v1/professors/"
             params = {'limit': PROFESSOR_LIMIT, 'status': 'pending'}
 
             response = requests.get(url, headers=self.headers, params=params, timeout=30)
@@ -131,7 +131,7 @@ class ScholarScraper:
     def save_publications(self, professor_id: int, data: Dict) -> bool:
         """Backend API로 논문 데이터 저장"""
         try:
-            url = f"{BACKEND_API_URL}/api/publications"
+            url = f"{BACKEND_API_URL}/api/v1/publications/"
             payload = {
                 'professor_id': professor_id,
                 'publications': data['publications'],
@@ -160,7 +160,7 @@ class ScholarScraper:
                            execution_time: int = 0):
         """스크래핑 결과 로깅"""
         try:
-            url = f"{BACKEND_API_URL}/api/scraping-logs"
+            url = f"{BACKEND_API_URL}/api/v1/scraping-logs/"
             payload = {
                 'professor_id': professor_id,
                 'status': status,

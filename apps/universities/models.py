@@ -158,6 +158,11 @@ class Professor(models.Model):
     department = models.CharField(max_length=200, blank=True, help_text='Legacy field - use university_department instead')
     profile_url = models.URLField(blank=True)
     google_scholar_url = models.URLField(blank=True)
+    scholar_id = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Google Scholar author ID for scraping publications'
+    )
     personal_website = models.URLField(blank=True)
     research_interests = models.JSONField(default=list)
     bio = models.TextField(blank=True)
