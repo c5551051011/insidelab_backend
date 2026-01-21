@@ -53,13 +53,15 @@ class ScholarScraper:
         """Backend API에서 교수 목록 가져오기"""
         try:
             url = f"{BACKEND_API_URL}/api/v1/professors/"
-            params = {'limit': PROFESSOR_LIMIT, 'status': 'pending'}
-
-            response = requests.get(url, headers=self.headers, params=params, timeout=30)
+            # Get professors with scholar_id set (filter in Python since API doesn't support this filter)
+            response = requests.get(url, headers=self.headers, timeout=30)
             response.raise_for_status()
 
-            professors = response.json()
-            logger.info(f"✅ Fetched {len(professors)} professors from API")
+            all_professors = response.json()
+            # Filter for professors with scholar_id
+            professors = [p for p in all_professors if p.get('scholar_id')][:PROFESSOR_LIMIT]
+
+            logger.info(f"✅ Fetched {len(professors)} professors with scholar_id from API")
             return professors
 
         except Exception as e:
@@ -131,11 +133,10 @@ class ScholarScraper:
     def save_publications(self, professor_id: int, data: Dict) -> bool:
         """Backend API로 논문 데이터 저장"""
         try:
-            url = f"{BACKEND_API_URL}/api/v1/publications/"
+            url = f"{BACKEND_API_URL}/api/v1/publications/bulk_import_from_scholar/"
             payload = {
                 'professor_id': professor_id,
-                'publications': data['publications'],
-                'metadata': data['metadata']
+                'publications': data['publications']
             }
 
             response = requests.post(
@@ -147,7 +148,7 @@ class ScholarScraper:
             response.raise_for_status()
 
             result = response.json()
-            logger.info(f"✅ Saved publications to API: {result}")
+            logger.info(f"✅ Saved publications: created={result.get('created')}, updated={result.get('updated')}")
             return True
 
         except Exception as e:
@@ -184,7 +185,7 @@ class ScholarScraper:
             logger.warning(f"⚠️  Professor {professor_name} has no scholar_id")
             return
 
-        logger.info(f"📚 Processing: {professor_name} ({professor['university']})")
+        logger.info(f"📚 Processing: {professor_name} ({professor.get('university_name', 'Unknown')})")
 
         # Google Scholar 스크래핑
         scraped_data = self.scrape_professor_publications(scholar_id)

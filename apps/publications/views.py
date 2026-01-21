@@ -589,6 +589,104 @@ class PublicationViewSet(viewsets.ModelViewSet):
         })
 
     @action(detail=False, methods=['post'])
+    def bulk_import_from_scholar(self, request):
+        """Google Scholar에서 스크레이핑한 논문 데이터를 벌크 생성"""
+        from django.db import transaction
+        from apps.universities.models import Professor
+
+        data = request.data
+        professor_id = data.get('professor_id')
+        publications_data = data.get('publications', [])
+
+        if not professor_id:
+            return Response(
+                {'error': 'professor_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            professor = Professor.objects.get(id=professor_id)
+        except Professor.DoesNotExist:
+            return Response(
+                {'error': f'Professor with id {professor_id} not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        created_count = 0
+        updated_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for pub_data in publications_data:
+                try:
+                    title = pub_data.get('title', '').strip()
+                    if not title:
+                        continue
+
+                    # Check if publication already exists
+                    publication, created = Publication.objects.get_or_create(
+                        title=title,
+                        defaults={
+                            'publication_year': pub_data.get('year'),
+                            'abstract': pub_data.get('abstract', ''),
+                            'citation_count': pub_data.get('citations', 0),
+                            'paper_url': pub_data.get('pub_url', ''),
+                        }
+                    )
+
+                    if created:
+                        created_count += 1
+                    else:
+                        # Update citation count if changed
+                        if pub_data.get('citations', 0) > publication.citation_count:
+                            publication.citation_count = pub_data.get('citations', 0)
+                            publication.save()
+                        updated_count += 1
+
+                    # Link to professor's lab if exists
+                    if professor.lab:
+                        publication.labs.add(professor.lab)
+
+                    # Create or link authors
+                    authors_list = pub_data.get('authors', [])
+                    for idx, author_name in enumerate(authors_list):
+                        if not author_name:
+                            continue
+                        author, _ = Author.objects.get_or_create(
+                            name=author_name.strip(),
+                            defaults={'current_affiliation': pub_data.get('bib', {}).get('venue', '')}
+                        )
+                        PublicationAuthor.objects.get_or_create(
+                            publication=publication,
+                            author=author,
+                            defaults={'author_order': idx + 1}
+                        )
+
+                    # Create or link venue
+                    venue_name = pub_data.get('venue', '').strip()
+                    if venue_name:
+                        venue, _ = Venue.objects.get_or_create(
+                            name=venue_name,
+                            defaults={'type': 'conference', 'tier': 'unknown'}
+                        )
+                        PublicationVenue.objects.get_or_create(
+                            publication=publication,
+                            venue=venue
+                        )
+
+                except Exception as e:
+                    errors.append({'title': pub_data.get('title', 'Unknown'), 'error': str(e)})
+                    continue
+
+        return Response({
+            'message': 'Bulk import completed',
+            'created': created_count,
+            'updated': updated_count,
+            'total_processed': len(publications_data),
+            'errors': errors
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'])
     def create_with_relations(self, request):
         """논문과 모든 관련 데이터를 한번에 생성"""
         from django.db import transaction
