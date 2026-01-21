@@ -414,3 +414,51 @@ class LabPublicationStats(models.Model):
 
     def __str__(self):
         return f"{self.lab.name} - {self.total_publications} papers, {self.total_citations} citations"
+
+
+class ScrapingLog(models.Model):
+    """Scholar 스크래핑 로그"""
+
+    STATUS_CHOICES = [
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('pending', 'Pending'),
+    ]
+
+    professor = models.ForeignKey(
+        'universities.Professor',
+        on_delete=models.CASCADE,
+        related_name='scraping_logs',
+        help_text='스크래핑 대상 교수'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text='스크래핑 상태'
+    )
+    publications_count = models.PositiveIntegerField(
+        default=0,
+        help_text='수집된 논문 수'
+    )
+    execution_time_seconds = models.PositiveIntegerField(
+        default=0,
+        help_text='실행 시간 (초)'
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text='에러 메시지 (실패 시)'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'scraping_logs'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['professor', '-created_at']),
+            models.Index(fields=['status']),
+        ]
+
+    def __str__(self):
+        return f"{self.professor.name} - {self.status} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"

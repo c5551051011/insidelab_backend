@@ -160,7 +160,7 @@ class ScholarScraper:
                            execution_time: int = 0):
         """스크래핑 결과 로깅"""
         try:
-            url = f"{BACKEND_API_URL}/api/v1/scraping-logs/"
+            url = f"{BACKEND_API_URL}/api/v1/publications/scraping-logs/"
             payload = {
                 'professor_id': professor_id,
                 'status': status,

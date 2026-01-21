@@ -13,13 +13,13 @@ from datetime import datetime, timedelta
 from .models import (
     Publication, Author, Venue, ResearchArea,
     CitationMetric, Collaboration, LabPublicationStats,
-    PublicationAuthor, PublicationVenue, PublicationResearchArea
+    PublicationAuthor, PublicationVenue, PublicationResearchArea, ScrapingLog
 )
 from .serializers import (
     PublicationMinimalSerializer, PublicationListSerializer, PublicationDetailSerializer,
     AuthorSerializer, VenueSerializer, ResearchAreaSerializer, ResearchAreaMinimalSerializer,
     CitationMetricSerializer, CollaborationSerializer,
-    LabPublicationStatsSerializer
+    LabPublicationStatsSerializer, ScrapingLogSerializer
 )
 from .filters import PublicationFilter, AuthorFilter, VenueFilter
 from apps.utils.cache import cache_response
@@ -1001,3 +1001,40 @@ class CollaborationViewSet(viewsets.ReadOnlyModelViewSet):
             'edges': edges,
             'min_collaborations': min_collaborations
         })
+
+
+class ScrapingLogViewSet(viewsets.ModelViewSet):
+    """스크래핑 로그 ViewSet"""
+    queryset = ScrapingLog.objects.select_related('professor')
+    serializer_class = ScrapingLogSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['professor', 'status']
+    ordering_fields = ['created_at', 'publications_count', 'execution_time_seconds']
+    ordering = ['-created_at']
+
+    @action(detail=False, methods=['get'])
+    def recent(self, request):
+        """최근 스크래핑 로그"""
+        recent_logs = self.get_queryset()[:50]
+        serializer = self.get_serializer(recent_logs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """스크래핑 통계"""
+        total_logs = self.get_queryset().count()
+        success_count = self.get_queryset().filter(status='success').count()
+        failed_count = self.get_queryset().filter(status='failed').count()
+        total_publications = self.get_queryset().aggregate(
+            total=Sum('publications_count')
+        )['total'] or 0
+
+        return Response({
+            'total_logs': total_logs,
+            'success_count': success_count,
+            'failed_count': failed_count,
+            'success_rate': (success_count / total_logs * 100) if total_logs > 0 else 0,
+            'total_publications_scraped': total_publications
+        })
+

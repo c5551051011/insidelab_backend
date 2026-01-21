@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import (
     Publication, Author, Venue, ResearchArea,
     PublicationAuthor, PublicationVenue, PublicationResearchArea,
-    CitationMetric, Collaboration, LabPublicationStats
+    CitationMetric, Collaboration, LabPublicationStats, ScrapingLog
 )
 
 
@@ -404,3 +404,19 @@ class LabPublicationStatsSerializer(serializers.ModelSerializer):
             }
             for area in top_areas
         ]
+
+
+class ScrapingLogSerializer(serializers.ModelSerializer):
+    """스크래핑 로그 시리얼라이저"""
+    professor_name = serializers.CharField(source='professor.name', read_only=True)
+    professor_id = serializers.IntegerField(source='professor.id', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = ScrapingLog
+        fields = [
+            'id', 'professor', 'professor_id', 'professor_name',
+            'status', 'status_display', 'publications_count',
+            'execution_time_seconds', 'error_message', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']

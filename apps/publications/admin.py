@@ -4,7 +4,7 @@ from django.db.models import Count
 from .models import (
     Publication, Author, Venue, ResearchArea,
     PublicationAuthor, PublicationVenue, PublicationResearchArea,
-    CitationMetric, Collaboration, LabPublicationStats
+    CitationMetric, Collaboration, LabPublicationStats, ScrapingLog
 )
 
 
@@ -239,6 +239,35 @@ class PublicationInline(admin.TabularInline):
     model = Publication.labs.through
     extra = 0
     autocomplete_fields = ['publication']
+
+
+@admin.register(ScrapingLog)
+class ScrapingLogAdmin(admin.ModelAdmin):
+    list_display = [
+        'professor', 'status', 'publications_count',
+        'execution_time_seconds', 'created_at'
+    ]
+    list_filter = ['status', 'created_at']
+    search_fields = ['professor__name', 'error_message']
+    readonly_fields = ['created_at']
+    autocomplete_fields = ['professor']
+
+    fieldsets = (
+        ('기본 정보', {
+            'fields': ('professor', 'status')
+        }),
+        ('결과', {
+            'fields': ('publications_count', 'execution_time_seconds')
+        }),
+        ('에러', {
+            'fields': ('error_message',),
+            'classes': ('collapse',)
+        }),
+        ('시스템 정보', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        })
+    )
 
 
 # Add publications to Lab admin if it exists
