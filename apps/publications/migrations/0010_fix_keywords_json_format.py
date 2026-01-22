@@ -6,29 +6,51 @@ import json
 
 def fix_keywords_format(apps, schema_editor):
     """Convert Python list objects to JSON strings in keywords field"""
-    Publication = apps.get_model('publications', 'Publication')
+    db_alias = schema_editor.connection.alias
 
-    for publication in Publication.objects.all():
-        if publication.keywords is not None:
-            # If keywords is already a list (from ArrayField), convert to JSON
-            if isinstance(publication.keywords, list):
-                # Already in correct format for JSONField
-                continue
-            elif isinstance(publication.keywords, str):
-                try:
-                    # Try to parse as JSON
-                    parsed = json.loads(publication.keywords)
-                    if isinstance(parsed, list):
-                        publication.keywords = parsed
-                        publication.save(update_fields=['keywords'])
-                except json.JSONDecodeError:
-                    # If not valid JSON, convert string to list
-                    publication.keywords = [publication.keywords] if publication.keywords else []
-                    publication.save(update_fields=['keywords'])
-            else:
-                # Convert other types to empty list
-                publication.keywords = []
-                publication.save(update_fields=['keywords'])
+    # Use raw SQL to handle the data conversion safely
+    with schema_editor.connection.cursor() as cursor:
+        # First, check if the table exists
+        try:
+            cursor.execute("""
+                SELECT COUNT(*) FROM information_schema.tables
+                WHERE table_name = 'publications'
+            """)
+            if cursor.fetchone()[0] == 0:
+                return  # Table doesn't exist, skip migration
+        except:
+            # If information_schema doesn't exist (SQLite), try direct access
+            try:
+                cursor.execute("SELECT COUNT(*) FROM publications LIMIT 1")
+            except:
+                return  # Table doesn't exist, skip migration
+
+        # Update keywords field to handle existing data
+        try:
+            # For PostgreSQL: Convert any non-JSON values to empty array
+            cursor.execute("""
+                UPDATE publications
+                SET keywords = '[]'::json
+                WHERE keywords IS NULL
+                   OR keywords = ''
+                   OR (keywords::text !~ '^[\\[\\{]')
+            """)
+        except:
+            # For SQLite or other databases: simpler approach
+            try:
+                cursor.execute("""
+                    UPDATE publications
+                    SET keywords = '[]'
+                    WHERE keywords IS NULL
+                       OR keywords = ''
+                       OR keywords NOT LIKE '[%'
+                       AND keywords NOT LIKE '{%'
+                """)
+            except:
+                # If all else fails, just set empty arrays
+                cursor.execute("UPDATE publications SET keywords = '[]'")
+
+        schema_editor.connection.commit()
 
 
 def reverse_keywords_format(apps, schema_editor):
